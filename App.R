@@ -24,18 +24,18 @@ ui <- fluidPage(
                   label = "Use robust correlations?",
                   choices = c("yes", "no"),
                   selected = "no"),
-      sliderInput("Nsim", 
+      numericInput("Nsim", 
                   label = "Number of simulations",
-                  min = 1, max = 10000, value = 500),
-    sliderInput("Rvalue", 
+                  min = 1, max = 10000, value = 100),
+      numericInput("Rvalue", 
                 label = "Actual Correlation",
-                min = 0, max = 1, value = 0),
-    sliderInput("PopSize", 
-                label = "Number of participants",
-                min = 2, max = 100, value = 20),
+                min = -1, max = 1, value = 0),
+      numericInput("PopSize", 
+                label = "Population size",
+                min = 2, max = 1000, value = 20),
     sliderInput("SDdist", 
                 label = "distance from mean: outlier/Population",
-                min = 1, max = 5, value = 3)
+                min = 0, max = 5, value = 3)
   ),  
   mainPanel(plotOutput("map"))
   )

@@ -1,10 +1,10 @@
 # function to obtain p-value from correlations
-library(Hmisc) # for rcorr
-library(MASS) # for mvrnorm
-library(ggplot2) # for plotting
-library(ggpubr) # for ggarrange
-library(fGarch) # for skewed distribution
-library(WRS2) # for wincor and pbcor
+# library(Hmisc) # for rcorr
+# library(MASS) # for mvrnorm
+# library(ggplot2) # for plotting
+# library(ggpubr) # for ggarrange
+# library(fGarch) # for skewed distribution
+# library(WRS2) # for wincor and pbcor
 # function to plot the data
 # function to plot the data
 report <- function(ListOut){
@@ -149,7 +149,9 @@ SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
     if (dProblem <3){
       D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
       if (dProblem == 1) {
-        D[PopSize,]<-rep(SDdist,2)
+        mMeans=apply(D,2,mean)
+        mStd=apply(D,2,sd)
+        D[PopSize,]<-mMeans+SDdist*mStd #rep(SDdist,2)
         Z <- c(rep(0,PopSize-1),1)
       }
       if (dProblem == 2) {
