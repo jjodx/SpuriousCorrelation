@@ -16,14 +16,6 @@ library(ggplot2)
 
 ## Introduction
 
-
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
 ## simulating a single correlation R=0
 
 In the first step of this tutorial, we will build two variables x and y that are compmletely random (Gaussian distribution with mean=0 and standard deviation = 1). Each variable will be sampled 20 times. Each sampled element of x (xi) with an element of y (yi) to have pairs of (xi,yi). Then, we will compute the correlation between x and y.
@@ -46,6 +38,53 @@ PP4
 ```
 
 ## What is the expected p-value distribution if there are no correlations
+``` {r, echo=FALSE}
+set.seed(12)# to make sure everybody gets the same results
+Nsim=1000
+  res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
+Sigma <- matrix(c(1,0,0,1),2,2)
+for (i in c(1:Nsim)){
+      D <- mvrnorm(n = 20, rep(0, 2), Sigma, empirical = FALSE)
+      R<-rcorr(D[,1],D[,2])
+      res[i,"R"] <- R$r[1,2]
+      res[i,"p"]<-R$P[1,2]
+      res[i,"Sig"]<-res[i,"p"]<0.05
+}
+Fcolor <- c("orange","lightblue")
+CountSig <- sum(res$Sig)
+  Psig <- CountSig/length(res$Sig)
+  res$Sig = factor(1-res$Sig)
+PP2 <- ggplot(res, aes(x=p, fill=Sig)) + 
+    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    scale_fill_manual(values = Fcolor) +
+    geom_hline(yintercept=CountSig, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = CountSig, label = "H0"), 
+               hjust = "left", 
+               vjust = "bottom", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    coord_cartesian(xlim = c(0, 1))+
+    theme(legend.position='none')+
+    scale_y_continuous(expand = c(0.1,0)) +
+    labs(title="",x="p-value" , y="Count")
+```
+
+Simulating such correlation repeatedly can allow one to look at the distribution of p-values when no correlations are present.
+When there is no correlation between two variables as it is the case here, one should expect a flat distribuation of p-values with 5% of the p-values being below the 5% typical significance threshold. We will simulate such correlation 10000 times in order to obtain a reliable distribution of the p-values. In each iteration of the algorithm, we will simultaneously draw 20 samples from two uncorrelated variables. The covariance matrix between these two uncorrelated variables should be `Sigma <- matrix(c(1,0,0,1),2,2)`, which gives:
+$$
+Sigma = \begin{pmatrix}
+1 & 0\\
+0 & 1
+\end{pmatrix}
+$$
+Using this covariance matrix, we will use the `mvnorm` function to build two uncorrelated variables at the same time:
+`D=mvnorm(20,rep(0, 2),Sigma)`, where the first column of D corresponds to the x random variables and the second to the y random variable. We will correlate these two random variables together and store the p-value for each stimulated pair of x,y variables (20 samples for each stimulation). This is repeated a number of times (`Nsim=1000`)
+In the absence of correlation, one should expect a uniform distribution of the p-values from 0 to 1. This is what is obseved in the graph below:
+````{r, echo=FALSE} 
+PP2
+```
 
 ## simulating a single correlation R=x
 
