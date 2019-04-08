@@ -1,0 +1,58 @@
+---
+title: "Simulating for understanding p-values"
+author: "Jean-Jacques Orban de Xivry"
+date: "April 8, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## simulating a single correlation R=0
+
+If we draw random numbers from two different normal distributions with mean=0 and standard deviation=1, we know that the correlation between these two random variables should be non-significant as there is not link between them. In R, we can simulate such
+
+## What is the expected p-value distribution if there are no correlations
+
+## simulating a single correlation R=x
+
+## What is the expected p-value distribution if there is a correlation
+
+## simulating multiple correlations, bootstrap
+
+## How sensisitive are correlations to one outlier?
+
+## Solution to the outlier problem
+### robust parametric correlation
+### non-parametric correlation - Spearman
+
+## How sensisitive are correlations to subgroups?
+
+## Solution to the subgroup problem
+### Spearmann is not a solution
+### Taking subgroups into account
+
+## The multiple comparison problem
+
+## extending this line of thought to the T-test
+
+
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
