@@ -2,11 +2,16 @@
 title: "Simulating for understanding p-values"
 author: "Jean-Jacques Orban de Xivry"
 date: "April 8, 2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(Hmisc) # for rcorr
+library(MASS) # for mvnorm
+library(ggplot2)
 ```
 
 ## Introduction
@@ -21,7 +26,24 @@ summary(cars)
 
 ## simulating a single correlation R=0
 
-If we draw random numbers from two different normal distributions with mean=0 and standard deviation=1, we know that the correlation between these two random variables should be non-significant as there is not link between them. In R, we can simulate such
+In the first step of this tutorial, we will build two variables x and y that are compmletely random (Gaussian distribution with mean=0 and standard deviation = 1). Each variable will be sampled 20 times. Each sampled element of x (xi) with an element of y (yi) to have pairs of (xi,yi). Then, we will compute the correlation between x and y.
+Off course, one should not expect any correlation between x and y as these are sampled from random distribution.
+One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw 20 samples from a normal distribution, we can have `x=mvrnorm(20,0,1,empirical = FALSE)` and `y=mvrnorm(20,0,1,empirical = FALSE)`
+```{r, echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+x=mvrnorm(20,0,1,empirical = FALSE)
+y=mvrnorm(20,0,1,empirical = FALSE)
+R<-rcorr(x,y)
+Scatter1 <- data.frame(x,y)
+PP4 <- ggplot(Scatter1, aes(x=x, y=y)) +
+  geom_point()+
+  geom_smooth(method='lm',formula=y~x)+
+  labs(title = "",x="Random variable 1", y="Random variable 2")
+```
+Together, these two variables are uncorrelated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits = 3)`). This is expected as we sampled two random variables. Therefore, the correlation between these two samples should be non-significant as there is not link between them.
+````{r, echo=FALSE} 
+PP4
+```
 
 ## What is the expected p-value distribution if there are no correlations
 
