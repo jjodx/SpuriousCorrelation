@@ -210,11 +210,166 @@ PP175
 
 ```
 
-The significance fallacy has important consequences for the publishability of finding. If two researchers are (unknowingly) reporting a false-positive correlation with N=10 and R=0.7 for researcher A and with N=75 and R=0.4 for researcher B, which one will more easily publish in a high-impact journal (whatever that means...)?
+The significance fallacy has important consequences for the publishability of findings. If two researchers are (unknowingly) reporting a false-positive correlation with N=10 and R=0.7 for researcher A and with N=75 and R=0.4 for researcher B, which one will more easily publish in a high-impact journal (whatever that means...)?
 
 ### understanding the multiple comparison problem.
 
+these simulations also show that if we keep simulating random variables, we are assured of getting at least one significant correlation. With 10000 simulations, there is 100% chance that at least one correlation will be significant. This exemplifies that if someone keeps trying to test correlation between many possible variables, the probability of getting a significant correlation even if there should be no correlation.
+
 ## simulating a single correlation R=x
+
+To simulate two variables with a given correlation, one can also use the `mvnorm` function but this time with a covariance matrix exhibiting the value for the simulated correlation on the off-diagonal elements. For instance, if we want to simulate two variables with a correlation of R=0.5, then the covariance matrix is:
+$$
+Sigma = \begin{pmatrix}
+1 & 0.5\\
+0.5 & 1
+\end{pmatrix}
+$$
+```{r, echo=FALSE}
+set.seed(12)# to make sure everybody gets the same results
+PopSize = 10
+Rval = 0.5
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE) 
+  R<-rcorr(D[,1],D[,2]) # correlation between the x and y variables
+Scatter2 <- data.frame(x=D[,1],y=D[,2])
+PP4 <- ggplot(Scatter2, aes(x=x, y=y)) +
+  geom_point()+
+  geom_smooth(method='lm',formula=y~x)+
+  labs(title = "",x="Random variable 1", y="Random variable 2")
+
+PP4
+```
+Together, these two variables are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits=3)`). Off course, the correlation between these two variables is not exactly zero. We will see later how we can recover the actual simulated correlation. 
+
+Now, we will repeat this process a number of times in order to obtain the distribution of the p-values when there is a correlation R=0.5. 
+When there is an underlying correlation between the two variables, the distribution of p-values becomes asymmetric with more p-values under 0.05.
+``` {r, echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+Nsim=1000
+  res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+for (i in c(1:Nsim)){
+      D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+      R<-rcorr(D[,1],D[,2])
+      res[i,"R"] <- R$r[1,2]
+      res[i,"p"]<-R$P[1,2]
+      res[i,"Sig"]<-res[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+CountSig <- sum(res$Sig)
+Psig <- CountSig/length(res$Sig)
+res$Sig = factor(1-res$Sig)
+PP2 <- ggplot(res, aes(x=p, fill=Sig)) + 
+    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    scale_fill_manual(values = Fcolor) +
+    geom_hline(yintercept=CountSig, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = CountSig, label = "H0"), 
+               hjust = "left", 
+               vjust = "bottom", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    coord_cartesian(xlim = c(0, 1))+
+    theme(legend.position='none')+
+    scale_y_continuous(expand = c(0.1,0)) +
+    labs(title="",x="p-value" , y="Count")
+
+PP2
+
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
+  PP3 <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+```
+
+### understanding power
+
+However, note that not all simulated correlations are significant. The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=0.5 with 10 observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100%-power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have 10 observations from two populations that are correlated with R=0.5, we have `r format(100*Psig, digits = 1)`% of detecting a significant correlation. This is illustrated on the graph below:
+
+``` {r echo=FALSE}
+PP3
+PopSize = 28
+set.seed(123)# to make sure everybody gets the same results
+Nsim=1000
+  res28 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+for (i in c(1:Nsim)){
+      D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+      R<-rcorr(D[,1],D[,2])
+      res28[i,"R"] <- R$r[1,2]
+      res28[i,"p"]<-R$P[1,2]
+      res28[i,"Sig"]<-res28[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+CountSig28 <- sum(res28$Sig)
+Psig28 <- CountSig28/length(res28$Sig)
+res28$Sig = factor(1-res28$Sig)
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t=c('a','b'))
+  PP28 <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+```
+
+As indicated on this graph, the expected power of an experiment is 80% (or 90%). Yet, this is here not the case. To detect a correlation R=0.5, one needs `r PopSize` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%.
+``` {r echo=FALSE}
+PP28
+```
+
+This manipulations demonstrate how one can calculate the required sample size for detecting a correlation of a given value.
 
 ### understanding that publication bias inflates effect size
 
@@ -239,13 +394,3 @@ If we look at the mean correlation from only significant studies, it is always l
 ## The multiple comparison problem
 
 ## extending this line of thought to the T-test
-
-
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
