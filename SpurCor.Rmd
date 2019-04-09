@@ -210,6 +210,8 @@ PP175
 
 ```
 
+The significance fallacy has important consequences for the publishability of finding. If two researchers are (unknowingly) reporting a false-positive correlation with N=10 and R=0.7 for researcher A and with N=75 and R=0.4 for researcher B, which one will more easily publish in a high-impact journal (whatever that means...)?
+
 ### understanding the multiple comparison problem.
 
 ## simulating a single correlation R=x
