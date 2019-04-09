@@ -5,6 +5,7 @@ date: "April 8, 2019"
 output:
   html_document: default
   pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -20,11 +21,11 @@ library(ggplot2)
 
 In the first step of this tutorial, we will build two variables x and y that are compmletely random (Gaussian distribution with mean=0 and standard deviation = 1). Each variable will be sampled 20 times. Each sampled element of x (xi) with an element of y (yi) to have pairs of (xi,yi). Then, we will compute the correlation between x and y.
 Off course, one should not expect any correlation between x and y as these are sampled from random distribution.
-One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw 20 samples from a normal distribution, we can have `x=mvrnorm(20,0,1,empirical = FALSE)` and `y=mvrnorm(20,0,1,empirical = FALSE)`
+One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw 10 samples from a normal distribution, we can have `x=mvrnorm(10,0,1,empirical = FALSE)` and `y=mvrnorm(10,0,1,empirical = FALSE)`
 ```{r, echo=FALSE}
-set.seed(123)# to make sure everybody gets the same results
-x=mvrnorm(20,0,1,empirical = FALSE)
-y=mvrnorm(20,0,1,empirical = FALSE)
+set.seed(12)# to make sure everybody gets the same results
+x=mvrnorm(10,0,1,empirical = FALSE)
+y=mvrnorm(10,0,1,empirical = FALSE)
 R<-rcorr(x,y)
 Scatter1 <- data.frame(x,y)
 PP4 <- ggplot(Scatter1, aes(x=x, y=y)) +
@@ -39,21 +40,24 @@ PP4
 
 ## What is the expected p-value distribution if there are no correlations
 ``` {r, echo=FALSE}
-set.seed(12)# to make sure everybody gets the same results
+set.seed(123)# to make sure everybody gets the same results
+Rval = 0 # value of the simulated correlation
 Nsim=1000
+PopSize = 10
   res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
-Sigma <- matrix(c(1,0,0,1),2,2)
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
 for (i in c(1:Nsim)){
-      D <- mvrnorm(n = 20, rep(0, 2), Sigma, empirical = FALSE)
+      D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
       R<-rcorr(D[,1],D[,2])
       res[i,"R"] <- R$r[1,2]
       res[i,"p"]<-R$P[1,2]
       res[i,"Sig"]<-res[i,"p"]<0.05
 }
+
 Fcolor <- c("orange","lightblue")
 CountSig <- sum(res$Sig)
-  Psig <- CountSig/length(res$Sig)
-  res$Sig = factor(1-res$Sig)
+Psig <- CountSig/length(res$Sig)
+res$Sig = factor(1-res$Sig)
 PP2 <- ggplot(res, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
@@ -81,12 +85,138 @@ Sigma = \begin{pmatrix}
 $$
 Using this covariance matrix, we will use the `mvnorm` function to build two uncorrelated variables at the same time:
 `D=mvnorm(20,rep(0, 2),Sigma)`, where the first column of D corresponds to the x random variables and the second to the y random variable. We will correlate these two random variables together and store the p-value for each stimulated pair of x,y variables (20 samples for each stimulation). This is repeated a number of times (`Nsim=1000`)
+
+``` {r eval=FALSE}
+Nsim=1000 # number of simulations
+PopSize = 10 #number os elements in each sample
+res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim)) # pre-allocating space for the dataframe
+for (i in c(1:Nsim)){
+  # drawing 10 elements for each random variable (x and y) with a covariance matrix equal to Sigma
+  D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE) 
+  R<-rcorr(D[,1],D[,2]) # correlation between the x and y variables
+  res[i,"R"] <- R$r[1,2] # storing the correlation value for further use
+  res[i,"p"]<-R$P[1,2]# storing the p-value for further use
+  res[i,"Sig"]<-res[i,"p"]<0.05 # tag p-values smaller than the type II error threshold (here 0.05)
+}
+```
+
+In the code above the R-dataframe `res` stores the results of the correlation between x (first colunm of D - `D[,1]`) and y (second column of D = `D[,2]`). The value of the correlation coefficient (`R$r[1,2]`) and the associated p-value (`R$p[1,2]`) are stored in this dataframe.
+
 In the absence of correlation, one should expect a uniform distribution of the p-values from 0 to 1. This is what is obseved in the graph below:
-````{r, echo=FALSE} 
+``` {r eval=FALSE}
+# plotting the distribution of p-values
+Fcolor <- c("orange","lightblue")
+ggplot(res, aes(x=p, fill=Sig)) + 
+  geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black")+
+  scale_fill_manual(values = Fcolor)
+```
+
+```{r, echo=FALSE} 
 PP2
 ```
 
+Interestingly, even in the absence of correlation between x and y, there is a subset of correlations associated with a p-value under the type II error threshold. Those are highlighted in orange in the figure above and are called false-positives. That is, these correlations are significant despite the fact that the variables x and y (from which only a few sample was taken) are not correlated by design. Given that the distribution of p-values is uniform and p-values fall in the interval [0,1], there will always be 5% of the p-values under the threshold of 0.05, independently of the number of samples for the two variables (one can test that by increasing the value of PopSize in the code above and re-running the code).
+
+### understanding the influence of sample size (and power) on the magnitude of the false-positive correlations
+
+``` {r, echo=FALSE}
+  Rsig <- mean(res$R[res$Sig==0])
+  Rall <- mean(res$R)
+  if (Rsig>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
+PP1 <- ggplot(res, aes(x=R, fill=Sig)) + 
+    geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
+    scale_fill_manual(values = Fcolor) +
+    coord_cartesian(xlim = c(-1, 1))+
+    geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", size = 1) +
+    geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
+               hjust = Rpos[1], 
+               vjust = "top", 
+               colour = "darkorange", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_vline(xintercept=Rval, linetype="dashed", color = "darkblue", size = 1) +
+    geom_label(aes(x = Rval, y=Inf, label = "Actual"),
+               hjust = Rpos[2], 
+               vjust = "top", 
+               colour = "darkblue", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    theme(legend.position='none') +
+    scale_y_continuous(expand = c(0.15,0)) +
+    labs(title="",x="correlation coefficient" , y="Count")
+```
+The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size.
+To plot the distribution of simulated correlation coefficient, one can use the `res` dataframe:
+```{r, eval=FALSE} 
+ggplot(res, aes(x=R, fill=Sig)) + 
+    geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
+    scale_fill_manual(values = Fcolor)
+```
+
+The false-positive correlations are associated with rather large correlations (absolute value > 0.6). 
+
+```{r, echo=FALSE} 
+PP1
+```
+
+That is, when using small sample size (here 10 observations for each variable), false-positive correlations have a high value and appear therefore very convincing. "Such a large correlation can only be true" would say an inexperienced scientist. Such high false-positive correlation is often accepted as solid proof but his part of the significance fallacy.
+
+Increasing the sample size has a direct influence on the magnitude of these false-positive correlations. One can build a new `res` dataframe with the sample size of 75 (`PopSize = 75`).
+``` {r echo=FALSE}
+Nsim=1000 # number of simulations
+PopSize = 75 #number os elements in each sample
+res75 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim)) # pre-allocating space for the dataframe
+for (i in c(1:Nsim)){
+  # drawing 75 elements for each random variable (x and y) with a covariance matrix equal to Sigma
+  D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE) 
+  R<-rcorr(D[,1],D[,2]) # correlation between the x and y variables
+  res75[i,"R"] <- R$r[1,2] # storing the correlation value for further use
+  res75[i,"p"]<-R$P[1,2]# storing the p-value for further use
+  res75[i,"Sig"]<-res75[i,"p"]<0.05 # tag p-values smaller than the type II error threshold (here 0.05)
+}
+CountSig75 <- sum(res75$Sig)
+Psig75 <- CountSig75/length(res75$Sig)
+res75$Sig = factor(1-res75$Sig)
+Rsig <- mean(res75$R[res75$Sig==0])
+Rall <- mean(res75$R)
+if (Rsig>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
+PP175 <- ggplot(res75, aes(x=R, fill=Sig)) + 
+  geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
+  scale_fill_manual(values = Fcolor) +
+  coord_cartesian(xlim = c(-1, 1))+
+  geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", size = 1) +
+  geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
+             hjust = Rpos[1], 
+             vjust = "top", 
+             colour = "darkorange", 
+             label.size = NA, 
+             size = 3,
+             fill = NA)+
+  geom_vline(xintercept=Rval, linetype="dashed", color = "darkblue", size = 1) +
+  geom_label(aes(x = Rval, y=Inf, label = "Actual"),
+             hjust = Rpos[2], 
+             vjust = "top", 
+             colour = "darkblue", 
+             label.size = NA, 
+             size = 3,
+             fill = NA)+
+  theme(legend.position='none') +
+  scale_y_continuous(expand = c(0.15,0)) +
+  labs(title="",x="correlation coefficient" , y="Count")
+
+PP175
+
+```
+
+### understanding the multiple comparison problem.
+
 ## simulating a single correlation R=x
+
+### understanding that publication bias inflates effect size
+
+If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation.
 
 ## What is the expected p-value distribution if there is a correlation
 
