@@ -20,6 +20,7 @@ library(ggplot2)
 1) Make terminology clearer: population-variable-sample-observations
 2) Use actual variables that we know are not correlated: height and QI? and some that are correlated with R=0.5: height and weight (even though this is not perfect)
 3) make choise between simulation tutorial and statistis tutorial
+4) compute CI instead of range for precision of correlations
 
 
 ## Introduction
@@ -252,6 +253,8 @@ PP4
 ```
 Together, these two variables are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits=3)`). Off course, the correlation between these two variables is not exactly zero. We will see later how we can recover the actual simulated correlation. 
 
+## What is the expected p-value distribution if there is a correlation
+
 Now, we will repeat this process a number of times in order to obtain the distribution of the p-values when there is a correlation R=`r Rval50`. 
 When there is an underlying correlation between the two variables, the distribution of p-values becomes asymmetric with more p-values under 0.05.
 ``` {r, echo=FALSE}
@@ -412,23 +415,23 @@ PP150
 ```
 
 ``` {r, echo=FALSE}
-  Rsig <- mean(res28$R[res28$Sig==0])
-  Rall <- mean(res28$R)
-  if (Rsig>Rval50){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
+  Rsig28 <- mean(res28$R[res28$Sig==0])
+  Rall28 <- mean(res28$R)
+  if (Rsig28>Rall28){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
 PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) + 
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", size = 1) +
-    geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
+    geom_vline(xintercept=Rsig28, linetype="dashed", color = "darkorange", size = 1) +
+    geom_label(aes(x = Rsig28, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
                colour = "darkorange", 
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=Rval50, linetype="dashed", color = "darkblue", size = 1) +
-    geom_label(aes(x = Rval50, y=Inf, label = "Actual"),
+    geom_vline(xintercept=Rall28, linetype="dashed", color = "darkblue", size = 1) +
+    geom_label(aes(x = Rall28, y=Inf, label = "Actual"),
                hjust = Rpos[2], 
                vjust = "top", 
                colour = "darkblue", 
@@ -440,7 +443,7 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
     labs(title="",x="correlation coefficient" , y="Count")
 ```
 
-On the graph above, we can see that while many simulated correlations are around the value of `r Rval50`. However, the simulated correlations span a large range between `r format(min(res$R),digits==2)` and  `r format(max(res$R),digits==2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the range of simulated correlation ([`r format(min(res28$R),digits==2)`,`r format(max(res28$R),digits==2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
+On the graph above, we can see that while many simulated correlations are around the value of `r Rval50`. However, the simulated correlations span a large range between `r format(min(res$R),digits = 2)` and  `r format(max(res$R),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the range of simulated correlation ([`r format(min(res28$R),digits = 2)`,`r format(max(res28$R),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
 
 ``` {r echo=FALSE}
 PP150_28
@@ -448,11 +451,8 @@ PP150_28
 
 ### understanding that publication bias inflates effect size
 
+The graph above also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line on the graphs above, with N= `r PopSize28`, average correlation is `r format(Rsig28,digits=3)`), this average correlation appears to overestimate the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant studies is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
 If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation.
-
-## What is the expected p-value distribution if there is a correlation
-
-## simulating multiple correlations, bootstrap
 
 ## How sensisitive are correlations to one outlier?
 
