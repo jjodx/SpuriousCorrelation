@@ -21,26 +21,43 @@ library(ggplot2)
 2) Use actual variables that we know are not correlated: height and QI? and some that are correlated with R=0.5: height and weight (even though this is not perfect)
 3) make choise between simulation tutorial and statistis tutorial
 4) compute CI instead of range for precision of correlations
+5) link with ShinyApp
 
+Refer to Bishop blog:
+http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html
+https://deevybee.blogspot.com/2017/11/anova-t-tests-and-regression-different.html
+https://deevybee.blogspot.com/2017/12/using-simulations-to-understand.html
+http://deevybee.blogspot.com/2017/12/using-simulations-to-understand-p-values.html
+https://www.slideshare.net/deevybishop/introduction-to-simulating-data-to-improve-your-research
 
-## Introduction
+# Introduction
+
+# Learning about statistics from simulated correlations.
+
+```{r, echo=FALSE}
+PopSize=15
+Nsim=100 # should be 1000
+```
+
+Let's imagine the following experiment. Researchers in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants because they think that these two parameters are correlated with each other. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant `i`, they have two observations: `(x~i~,y~i~)` where `x~i~` is the height of the participant and `y~i~` is his/her working memory capacity.
+To simulate this experiment numerically, we can generate `r PopSize` random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated height of each participant and `r PopSize` different random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated working memory capacity of each participant. A mean of 0 and a standard deviation of 1 were chosen for simplicity but all the arguments below hold if ones picks another mean and/or another standard deviation. By doing this, we have generated `r PopSize` pairs of height and working memory capacity. To follow the idea of our Syldavian researchers, we can then compute the correlation between height and working memory capacity of our randomly generated population.
 
 ## simulating a single correlation R=0
 
 ```{r, echo=FALSE}
 set.seed(12)# to make sure everybody gets the same results
-PopSize=15
 x=mvrnorm(PopSize,0,1,empirical = FALSE)
 y=mvrnorm(PopSize,0,1,empirical = FALSE)
 R<-rcorr(x,y)
 Scatter1 <- data.frame(x,y)
 PP4 <- ggplot(Scatter1, aes(x=x, y=y)) +
   geom_point()+
-  geom_smooth(method='lm',formula=y~x)+
+  geom_smooth(method='lm',se=FALSE)+
   labs(title = "",x="Random variable 1", y="Random variable 2")
 ```
 
-In the first step of this tutorial, we will build two variables x and y that are compmletely random (Gaussian distribution with mean=0 and standard deviation = 1). Each variable will be sampled `r PopSize` times. Each sampled element of x (xi) with an element of y (yi) to have pairs of (xi,yi). Then, we will compute the correlation between x and y.
+In the first step of this tutorial, we will use `R` to build two variables x and y that are compmletely random (Gaussian distribution with mean=0 and standard deviation = 1). Each variable will be measured `r PopSize` times. Each sampled element of x (xi) with an element of y (yi) to have pairs of (xi,yi). Then, we will compute the correlation between x and y.
+
 Off course, one should not expect any correlation between x and y as these are sampled from random distribution.
 One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw `r PopSize` samples from a normal distribution, we can have `x=mvrnorm(``r PopSize` `,0,1,empirical = FALSE)` and `y=mvrnorm(` `r PopSize` `,0,1,empirical = FALSE)`
 
@@ -53,7 +70,6 @@ PP4
 ``` {r, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 Rval = 0 # value of the simulated correlation
-Nsim=1000
   res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
 Sigma <- matrix(c(1,Rval,Rval,1),2,2)
 for (i in c(1:Nsim)){
@@ -189,7 +205,7 @@ Psig75 <- CountSig75/length(res75$Sig)
 res75$Sig = factor(1-res75$Sig)
 Rsig <- mean(res75$R[res75$Sig==0])
 Rall <- mean(res75$R)
-if (Rsig>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
+if (Rsig>Rall){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
 PP175 <- ggplot(res75, aes(x=R, fill=Sig)) + 
   geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
   scale_fill_manual(values = Fcolor) +
@@ -454,11 +470,50 @@ PP150_28
 The graph above also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line on the graphs above, with N= `r PopSize28`, average correlation is `r format(Rsig28,digits=3)`), this average correlation appears to overestimate the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant studies is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
 If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation.
 
-## How sensisitive are correlations to one outlier?
+# Learning about sensitivity of correlations from simulated correlations.
+The use of correlation is widespread in science. Yet, correlations are very sensitive to violations of the assumptions. Here, we will show that 1) in the absence of correlation (R=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when R=0); 2) if data are pooled between two different groups (e.g. young adults vs. old adults) and the means for the two groups differ on the two variables.
 
-## Solution to the outlier problem
-### robust parametric correlation
-### non-parametric correlation - Spearman
+## the outlier problem: simulation and solution
+
+``` {r echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+SDdist <- 3
+POP <- c("Main","outlier")
+D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+mMeans<-apply(D,2,mean)
+mStd<-apply(D,2,sd)
+D[PopSize,]<-mMeans+SDdist*mStd
+Z <- c(rep(0,PopSize-1),1)
+Scatter1 <- data.frame(D1=D[,1],D2=D[,2],Zf= factor(Z))
+Rout<-rcorr(D[,1],D[,2])
+
+cols <- c("royalblue3", "orangered2" )
+Outlier4 <- ggplot(Scatter1) + 
+  geom_point(aes(x=D1, y=D2, color=Zf))+
+  geom_smooth(aes(x=D1, y=D2),method='lm',se=FALSE,formula = y~x)+
+  scale_color_manual(name = "Population(s)", 
+                     values = cols,
+                     labels = POP)+
+  labs(title = "",x="Random variable 1" , y="Random variable 2")
+```
+
+To generate an outlier, we will first generate the x and y parameteres for the 'r PopSize' individuals. We will then compute their mean and standard deviation, the data from the last individual will then be replaced by a point 'r SDdist' standard deviation away from the mean (mean + 3*SD). This will be done for both x and y variables for this individual. By doing so, one obtains the following grahics.
+
+``` {r echo=FALSE}
+Outlier4
+```
+
+In this case, we observe a strong correlation R=`r format(Rout$r[1,2], digits = 2)` (p=`r format(Rout$P[1,2], digits = 2)`). However, it is unclear whether more such correlations will turn out to be significant in the presence of an outlier. Therefore, as we did above, we will generate many such samples and test whether the presence of an outlier increases the chance of getting a significant correlation.
+
+### Simulation: How sensisitive are correlations to one outlier?
+
+## testing solutions
+
+How do we know that the solution is good? If type I error rate is 5% and if average correlation is closed to simulated one.
+
+### Solution: robust parametric correlation
+### Solution: non-parametric correlation - Spearman
 
 ## How sensisitive are correlations to subgroups?
 
@@ -466,6 +521,5 @@ If we look at the mean correlation from only significant studies, it is always l
 ### Spearmann is not a solution
 ### Taking subgroups into account
 
-## The multiple comparison problem
 
 ## extending this line of thought to the T-test
