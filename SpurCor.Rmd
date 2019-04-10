@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 library(ggplot2)
+library(WRS2) # for wincor and pbcor
 ```
 
 ## To do for JJ
@@ -22,6 +23,7 @@ library(ggplot2)
 3) make choise between simulation tutorial and statistis tutorial
 4) compute CI instead of range for precision of correlations
 5) link with ShinyApp
+6) Fig number for reference and fig legends
 
 Refer to Bishop blog:
 http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html
@@ -504,20 +506,209 @@ To generate an outlier, we will first generate the x and y parameteres for the '
 Outlier4
 ```
 
-In this case, we observe a strong correlation R=`r format(Rout$r[1,2], digits = 2)` (p=`r format(Rout$P[1,2], digits = 2)`). However, it is unclear whether more such correlations will turn out to be significant in the presence of an outlier. Therefore, as we did above, we will generate many such samples and test whether the presence of an outlier increases the chance of getting a significant correlation.
+In this case, we observe a strong correlation R=`r format(Rout$r[1,2], digits = 2)` (p=`r format(Rout$P[1,2], digits = 2)`). However, it is unclear whether more correlations will turn out to be significant in the presence of an outlier. Therefore, as we did above, we will generate many such samples and test whether the presence of an outlier increases the chance of getting a significant correlation.
 
 ### Simulation: How sensisitive are correlations to one outlier?
+
+``` {r, echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+resOut <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+for (i in c(1:Nsim)){
+      D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+      mMeans<-apply(D,2,mean)
+      mStd<-apply(D,2,sd)
+      D[PopSize,]<-mMeans+SDdist*mStd
+      Z <- c(rep(0,PopSize-1),1)
+      R<-rcorr(D[,1],D[,2])
+      resOut[i,"R"] <- R$r[1,2]
+      resOut[i,"p"]<-R$P[1,2]
+      resOut[i,"Sig"]<-resOut[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+CountSigOut <- sum(resOut$Sig)
+PsigOut <- CountSigOut/length(resOut$Sig)
+resOut$Sig = factor(1-resOut$Sig)
+PP2Out <- ggplot(resOut, aes(x=p, fill=Sig)) + 
+    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    scale_fill_manual(values = Fcolor) +
+    geom_hline(yintercept=CountSigOut, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = CountSigOut, label = "H0"), 
+               hjust = "left", 
+               vjust = "bottom", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    coord_cartesian(xlim = c(0, 1))+
+    theme(legend.position='none')+
+    scale_y_continuous(expand = c(0.1,0)) +
+    labs(title="",x="p-value" , y="Count")
+
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1), t=c('a','b'))
+  PP3Out <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+```
+
+We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values. In addition, only 5% of the simulated correlations should be significant as we have also detailed above (Fig???). The two graphs below illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut, digits=2)` % significant p-values!
+
+``` {r echo=FALSE}
+PP2Out
+```
+
+``` {r echo=FALSE}
+PP3Out
+```
+
+The interesting reader can use the Shiny App or the R code to explore the influnce of population size and the distance of the oultier from the mean on the increase in  type I error caused by the outlier. Off course, this is also reflected in the value of the average correlation coefficient.
 
 ## testing solutions
 
 How do we know that the solution is good? If type I error rate is 5% and if average correlation is closed to simulated one.
 
-### Solution: robust parametric correlation
 ### Solution: non-parametric correlation - Spearman
+``` {r echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+resSpear <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+for (i in c(1:Nsim)){
+      D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+      mMeans<-apply(D,2,mean)
+      mStd<-apply(D,2,sd)
+      D[PopSize,]<-mMeans+SDdist*mStd
+      Z <- c(rep(0,PopSize-1),1)
+      R<-rcorr(D[,1],D[,2],type = 'spearman')
+      resSpear[i,"R"] <- R$r[1,2]
+      resSpear[i,"p"]<-R$P[1,2]
+      resSpear[i,"Sig"]<-resSpear[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+CountSigSpear <- sum(resSpear$Sig)
+PsigSpear <- CountSigSpear/length(resSpear$Sig)
+resSpear$Sig = factor(1-resSpear$Sig)
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear,1), t=c('a','b'))
+  PP3Spear <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+```
+
+A first solution is to use a non-parametric rank correlation such as Spearman. Here, the graph below shows that the influence of the outlier is much reduced and the type I error rate (= `r PsigSpear`) is very close to the 5% level.
+``` {r echo=FALSE}
+PP3Spear
+```
+### Solution: robust parametric correlation
+``` {r echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+resRob <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+for (i in c(1:Nsim)){
+      D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+      mMeans<-apply(D,2,mean)
+      mStd<-apply(D,2,sd)
+      D[PopSize,]<-mMeans+SDdist*mStd
+      Z <- c(rep(0,PopSize-1),1)
+      R<-wincor(D[,1],D[,2],0.2)
+      resRob[i,"R"] <- R$cor
+      resRob[i,"p"]<-R$p.value
+      resRob[i,"Sig"]<-resRob[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+CountSigRob <- sum(resRob$Sig)
+PsigRob <- CountSigRob/length(resRob$Sig)
+resRob$Sig = factor(1-resRob$Sig)
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1), t=c('a','b'))
+  PP3Rob <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+```
+
+In contrast, the use of winsorized correlation solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by the graph below, which shows that the influence of the outlier is eliminated and the type I error rate (= `r PsigRob`) is very close to the 5% level.
+``` {r echo=FALSE}
+PP3Rob
+```
 
 ## How sensisitive are correlations to subgroups?
 
-## Solution to the subgroup problem
+### Solution to the subgroup problem
 ### Spearmann is not a solution
 ### Taking subgroups into account
 
