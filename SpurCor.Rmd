@@ -12,11 +12,13 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval.after = "fig.cap")
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 library(ggplot2)
 library(WRS2) # for wincor and pbcor
+library(captioner)
+fig_nums <- captioner()
 ```
 
 ## To do for JJ
@@ -58,6 +60,8 @@ PP4 <- ggplot(Scatter1, aes(x=x, y=y)) +
   geom_point()+
   geom_smooth(method='lm',se=FALSE)+
   labs(title = "",x="Random variable 1", y="Random variable 2")
+fig_nums("PP4", "Absence of correlation from two randomly generated samples from two uncorrelated variables",display=FALSE)
+
 ```
 
 In the first step of this tutorial, we will use `R` to build two variables x and y that are compmletely random (Gaussian distribution with mean=0 and standard deviation = 1). Each variable will be measured `r PopSize` times. Each sampled element of x (xi) with an element of y (yi) to have pairs of (xi,yi). Then, we will compute the correlation between x and y.
@@ -65,8 +69,8 @@ In the first step of this tutorial, we will use `R` to build two variables x and
 Off course, one should not expect any correlation between x and y as these are sampled from random distribution.
 One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw `r PopSize` samples from a normal distribution, we can have `x=mvrnorm(``r PopSize` `,0,1,empirical = FALSE)` and `y=mvrnorm(` `r PopSize` `,0,1,empirical = FALSE)`
 
-Together, these two variables are uncorrelated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits = 3)`). This is expected as we sampled two random variables. Therefore, the correlation between these two samples should be non-significant as there is not link between them. see \autoref{NoCorrel}
-````{r, echo=FALSE, fig.cap= "No correlation. \\label{NoCorrel}"} 
+Together, these two variables are uncorrelated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits = 3)`). This is expected as we sampled two random variables. Therefore, the correlation between these two samples should be non-significant as there is not link between them.
+````{r, echo=FALSE, fig.cap= fig_nums("PP4")} 
 PP4
 ```
 
@@ -103,6 +107,7 @@ PP2 <- ggplot(res, aes(x=p, fill=Sig)) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
+fig_nums("PP2", "Distribution of p-values when no effect is present. Each simulated p-value corresponds to the correlation between samples taken from two uncorrelated variables",display=FALSE)
 ```
 
 Simulating such correlation repeatedly can allow one to look at the distribution of p-values when no correlations are present.
@@ -141,7 +146,7 @@ ggplot(res, aes(x=p, fill=Sig)) +
   scale_fill_manual(values = Fcolor)
 ```
 
-```{r, echo=FALSE} 
+```{r fig2, echo=FALSE, fig.cap=fig_nums("PP2")} 
 PP2
 ```
 
@@ -176,6 +181,7 @@ PP1 <- ggplot(res, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
+fig_nums("PP1", paste("distribution of the correlations coefficient when R=", Rval, "and N=", PopSize),display=FALSE)
 ```
 The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size.
 To plot the distribution of simulated correlation coefficient, one can use the `res` dataframe:
@@ -187,7 +193,7 @@ ggplot(res, aes(x=R, fill=Sig)) +
 
 The false-positive correlations are associated with rather large correlations (absolute value > 0.6). 
 
-```{r, echo=FALSE} 
+```{r, echo=FALSE, fig.cap=fig_nums("PP1")} 
 PP1
 ```
 
@@ -233,7 +239,10 @@ PP175 <- ggplot(res75, aes(x=R, fill=Sig)) +
   theme(legend.position='none') +
   scale_y_continuous(expand = c(0.15,0)) +
   labs(title="",x="correlation coefficient" , y="Count")
+fig_nums("PP175", paste("distribution of the correlations coefficient when R=", Rval, "and the sample size is" PopSize75),display=FALSE)
+```
 
+``` {r PP175, echo=FALSE, fig.cap=fig_nums("PP175")}
 PP175
 ```
 
