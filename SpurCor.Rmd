@@ -27,20 +27,25 @@ fig_nums <- captioner()
 2) Use actual variables that we know are not correlated: height and QI? and some that are correlated with R=0.5: height and weight (even though this is not perfect)
 3) make choise between simulation tutorial and statistics tutorial
 4) link with ShinyApp
-5) Fig number for reference and fig legends
 
 Refer to Bishop blog:
 http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html
+
 https://deevybee.blogspot.com/2017/11/anova-t-tests-and-regression-different.html
+
 https://deevybee.blogspot.com/2017/12/using-simulations-to-understand.html
+
 http://deevybee.blogspot.com/2017/12/using-simulations-to-understand-p-values.html
+
 https://www.slideshare.net/deevybishop/introduction-to-simulating-data-to-improve-your-research
 
 # Introduction
 
+Refer to lakens on ameliorating the interpretation of p-values
+
 # Learning about statistics from simulated correlations.
 
-```{r, echo=FALSE}
+```{r ParamDef, echo=FALSE}
 PopSize=15
 Nsim=100 # should be 1000
 ```
@@ -50,7 +55,7 @@ To simulate this experiment numerically, we can generate `r PopSize` random numb
 
 ## simulating a single correlation R=0
 
-```{r, echo=FALSE}
+```{r CorrelR0, echo=FALSE}
 set.seed(12)# to make sure everybody gets the same results
 x=mvrnorm(PopSize,0,1,empirical = FALSE)
 y=mvrnorm(PopSize,0,1,empirical = FALSE)
@@ -70,12 +75,12 @@ Off course, one should not expect any correlation between x and y as these are s
 One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw `r PopSize` samples from a normal distribution, we can have `x=mvrnorm(``r PopSize` `,0,1,empirical = FALSE)` and `y=mvrnorm(` `r PopSize` `,0,1,empirical = FALSE)`
 
 Together, these two variables are uncorrelated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits = 3)`). This is expected as we sampled two random variables. Therefore, the correlation between these two samples should be non-significant as there is not link between them.
-````{r, echo=FALSE, fig.cap= fig_nums("PP4")} 
+````{r plotR0, echo=FALSE, fig.cap= fig_nums("PP4")} 
 PP4
 ```
 
 ## What is the expected p-value distribution if there are no correlations
-``` {r, echo=FALSE}
+``` {r SimulationR0, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 Rval = 0 # value of the simulated correlation
   res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
@@ -146,7 +151,7 @@ ggplot(res, aes(x=p, fill=Sig)) +
   scale_fill_manual(values = Fcolor)
 ```
 
-```{r fig2, echo=FALSE, fig.cap=fig_nums("PP2")} 
+```{r PlotDistribPvalUnderR0, echo=FALSE, fig.cap=fig_nums("PP2")} 
 PP2
 ```
 
@@ -154,7 +159,7 @@ Interestingly, even in the absence of correlation between x and y, there is a su
 
 ### understanding the influence of sample size (and power) on the magnitude of the false-positive correlations
 
-``` {r, echo=FALSE}
+``` {r DistriRunderR0, echo=FALSE}
   Rsig <- mean(res$R[res$Sig==0])
   Rall <- mean(res$R)
   if (Rsig>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
@@ -185,21 +190,16 @@ fig_nums("PP1", paste("distribution of the correlations coefficient when R=", Rv
 ```
 The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size.
 To plot the distribution of simulated correlation coefficient, one can use the `res` dataframe:
-```{r, eval=FALSE} 
-ggplot(res, aes(x=R, fill=Sig)) + 
-    geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
-    scale_fill_manual(values = Fcolor)
-```
 
 The false-positive correlations are associated with rather large correlations (absolute value > 0.6). 
 
-```{r, echo=FALSE, fig.cap=fig_nums("PP1")} 
+```{r PlotDistriRunderR0, echo=FALSE, fig.cap=fig_nums("PP1")} 
 PP1
 ```
 
 That is, when using small sample size (here 10 observations for each variable), false-positive correlations have a high value and appear therefore very convincing. "Such a large correlation can only be true" would say an inexperienced scientist. Such high false-positive correlation is often accepted as solid proof but his part of the significance fallacy.
 
-``` {r echo=FALSE}
+``` {r DistriRN75, echo=FALSE}
 PopSize75 = 75 #number os elements in each sample
 res75 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim)) # pre-allocating space for the dataframe
 for (i in c(1:Nsim)){
@@ -239,10 +239,10 @@ PP175 <- ggplot(res75, aes(x=R, fill=Sig)) +
   theme(legend.position='none') +
   scale_y_continuous(expand = c(0.15,0)) +
   labs(title="",x="correlation coefficient" , y="Count")
-fig_nums("PP175", paste("distribution of the correlations coefficient when R=", Rval, "and the sample size is" PopSize75),display=FALSE)
+fig_nums("PP175", paste("distribution of the correlations coefficient when R=", Rval, "and the sample size is", PopSize75),display=FALSE)
 ```
 
-``` {r PP175, echo=FALSE, fig.cap=fig_nums("PP175")}
+``` {r PlotDistriRN75, echo=FALSE, fig.cap=fig_nums("PP175")}
 PP175
 ```
 
@@ -254,7 +254,7 @@ The significance fallacy has important consequences for the publishability of fi
 
 these simulations also show that if we keep simulating random variables, we are assured of getting at least one significant correlation. With `r Nsim` simulations, there is 100% chance that at least one correlation will be significant. This exemplifies that if someone keeps trying to test correlation between many possible variables, the probability of getting a significant correlation even if there should be no correlation.
 
-```{r, echo=FALSE}
+```{r SetR50, echo=FALSE}
 Rval50 = 0.5
 ```
 
@@ -267,18 +267,22 @@ Sigma = \begin{pmatrix}
 `r Rval50` & 1
 \end{pmatrix}
 $$
-```{r, echo=FALSE}
+
+```{r CorrelR50, echo=FALSE}
 set.seed(12)# to make sure everybody gets the same results
 Sigma <- matrix(c(1,Rval50,Rval50,1),2,2)
 D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE) 
   R<-rcorr(D[,1],D[,2]) # correlation between the x and y variables
 Scatter2 <- data.frame(x=D[,1],y=D[,2])
-PP4 <- ggplot(Scatter2, aes(x=x, y=y)) +
+PP450 <- ggplot(Scatter2, aes(x=x, y=y)) +
   geom_point()+
   geom_smooth(method='lm',formula=y~x)+
   labs(title = "",x="Random variable 1", y="Random variable 2")
+fig_nums("PP450", paste("example of correlations when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
+```
 
-PP4
+```{r plotCorrelR50, echo=FALSE, fig.cap=fig_nums("PP450")}
+PP450
 ```
 Together, these two variables are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits=3)`). Off course, the correlation between these two variables is not exactly zero. We will see later how we can recover the actual simulated correlation. 
 
@@ -286,7 +290,7 @@ Together, these two variables are correlated with a correlation coefficient R= `
 
 Now, we will repeat this process a number of times in order to obtain the distribution of the p-values when there is a correlation R=`r Rval50`. 
 When there is an underlying correlation between the two variables, the distribution of p-values becomes asymmetric with more p-values under 0.05.
-``` {r, echo=FALSE}
+``` {r SimulationR50, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
 Sigma <- matrix(c(1,Rval50,Rval50,1),2,2)
@@ -302,26 +306,23 @@ Fcolor <- c("orange","lightblue")
 CountSig <- sum(res$Sig)
 Psig <- CountSig/length(res$Sig)
 res$Sig = factor(1-res$Sig)
-PP2 <- ggplot(res, aes(x=p, fill=Sig)) + 
+PP2_50 <- ggplot(res, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
-    geom_hline(yintercept=CountSig, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0, y = CountSig, label = "H0"), 
-               hjust = "left", 
-               vjust = "bottom", 
-               colour = "black", 
-               label.size = NA, 
-               size = 3,
-               fill = NA)+
     coord_cartesian(xlim = c(0, 1))+
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
+fig_nums("PP2_50", paste("distribution of p-values when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
+```
 
-PP2
+``` {r PlotDistriP_R50, echo=FALSE, fig.cap=fig_nums("PP2_50")}
+PP2_50
+```
 
+``` {r RectangleErrorTypeR50, echo=FALSE}
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
-  PP3 <- ggplot() +  
+  PP3_50 <- ggplot() +  
     geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
               color="black") +
     scale_fill_manual(values = Fcolor, 
@@ -349,14 +350,18 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
+  fig_nums("PP3_50", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
 
 ### understanding power
 
-However, note that not all simulated correlations are significant. The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100%-power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval`, we have `r format(100*Psig, digits = 1)`% of detecting a significant correlation. This is illustrated on the graph below:
+However, note that not all simulated correlations are significant. The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100%-power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation. This is illustrated on the graph below:
 
-``` {r echo=FALSE}
-PP3
+``` {r PlotRectangleErrorTypeR50, echo=FALSE, fig.cap=fig_nums(PP3_50)}
+PP3_50
+```
+
+``` {r SimulationPvalue4power_N28, echo=FALSE}
 PopSize28 = 28
 set.seed(123)# to make sure everybody gets the same results
 Nsim=1000
@@ -403,17 +408,18 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
+  fig_nums("PP28", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
 ```
 
 As indicated on this graph, the expected power of an experiment is 80% (or 90%). Yet, this is here not the case. To detect a correlation R=`r Rval`, one needs `r PopSize28` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%.
-``` {r echo=FALSE}
+``` {r RectangleErrorTypeR50_N28, echo=FALSE, fig.cap=fig_nums("PP28")}
 PP28
 ```
 
 This manipulations demonstrate how one can get insights about the required sample size for detecting a correlation of a given value, do some simulations.
 ### effect of sample size on the accuracy of correlation estimation.
 
-``` {r, echo=FALSE}
+``` {r DistriR_R50_N15, echo=FALSE}
   Rsig <- mean(res$R[res$Sig==0])
   Rall <- mean(res$R)
   if (Rsig>Rval50){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
@@ -440,10 +446,14 @@ PP150 <- ggplot(res, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
+  fig_nums("PP150", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
+```
+
+``` {r PlotDistriR_R50_N15, echo=FALSE, fig.cap=fig_nums("PP150")}
 PP150
 ```
 
-``` {r, echo=FALSE}
+``` {r DistriR_R50_N28, echo=FALSE}
   Rsig28 <- mean(res28$R[res28$Sig==0])
   Rall28 <- mean(res28$R)
   if (Rsig28>Rall28){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
@@ -470,11 +480,12 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
+fig_nums("PP150_28", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
 ```
 
 On the graph above, we can see that while many simulated correlations are around the value of `r Rval50`. However, the simulated correlations exhibited a large 95% confidence interval: between `r format(quantile(res$R,0.025),digits = 2)` and  `r format(quantile(res$R,0.975),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the 95% confidence interval of simulated correlation ([`r format(quantile(res28$R,0.025),digits = 2)`,`r format(quantile(res28$R,0.975),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
 
-``` {r echo=FALSE}
+``` {r PlotDistriR_R50_N28, echo=FALSE, fig.cap=fig_nums("PP150_28")}
 PP150_28
 ```
 
@@ -488,7 +499,7 @@ The use of correlation is widespread in science. Yet, correlations are very sens
 
 ## the outlier problem: simulation and solution
 
-``` {r echo=FALSE}
+``` {r ExampleOutlier, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 Sigma <- matrix(c(1,Rval,Rval,1),2,2)
 SDdist <- 3
@@ -509,11 +520,12 @@ Outlier4 <- ggplot(Scatter1) +
                      values = cols,
                      labels = POP)+
   labs(title = "",x="Random variable 1" , y="Random variable 2")
+fig_nums("Outlier4", paste("example of a correlation biased by an outlier (in red) when the simulated R is ", Rval, ", the sample size is", PopSize, " and the outlier is", SDdist, "standard deviation away from the mean"),display=FALSE)
 ```
 
 To generate an outlier, we will first generate the x and y parameteres for the 'r PopSize' individuals. We will then compute their mean and standard deviation, the data from the last individual will then be replaced by a point 'r SDdist' standard deviation away from the mean (mean + 3*SD). This will be done for both x and y variables for this individual. By doing so, one obtains the following grahics.
 
-``` {r echo=FALSE}
+``` {r PlotExampleOutlier, echo=FALSE, fig.cap=fig_nums("Outlier4")}
 Outlier4
 ```
 
@@ -521,7 +533,7 @@ In this case, we observe a strong correlation R=`r format(Rout$r[1,2], digits = 
 
 ### Simulation: How sensisitive are correlations to one outlier?
 
-``` {r, echo=FALSE}
+``` {r SimulationOutlier, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 resOut <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
 Sigma <- matrix(c(1,Rval,Rval,1),2,2)
@@ -556,6 +568,7 @@ PP2Out <- ggplot(resOut, aes(x=p, fill=Sig)) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
+fig_nums("PP2Out", paste("distribution of p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
 
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1), t=c('a','b'))
   PP3Out <- ggplot() +  
@@ -586,15 +599,16 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
+  fig_nums("PP3Out", paste("proportion of significant and non-significant p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values. In addition, only 5% of the simulated correlations should be significant as we have also detailed above (Fig???). The two graphs below illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut, digits=2)` % significant p-values!
+We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values. In addition, only 5% of the simulated correlations should be significant as we have also detailed above (Fig???). The two graphs below illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=0)` % significant p-values!
 
-``` {r echo=FALSE}
+``` {r PlotDistriP_outlier, echo=FALSE, fig.cap=fig_nums("PP2Out")}
 PP2Out
 ```
 
-``` {r echo=FALSE}
+``` {r PlotProportionP_outlier, echo=FALSE, fig.cap=fig_nums("PP3Out")}
 PP3Out
 ```
 
@@ -605,7 +619,7 @@ The interesting reader can use the Shiny App or the R code to explore the influn
 How do we know that the solution is good? If type I error rate is 5% and if average correlation is closed to simulated one.
 
 ### Solution: non-parametric correlation - Spearman
-``` {r echo=FALSE}
+``` {r SimulationSpearOutlier, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 resSpear <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
 Sigma <- matrix(c(1,Rval,Rval,1),2,2)
@@ -654,16 +668,17 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
+  fig_nums("PP3Spear",paste("Ability of Spearman correlation to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-A first solution is to use a non-parametric rank correlation such as Spearman (DEFINE). Here, the graph below shows that the influence of the outlier is much reduced and the type I error rate (= `r PsigSpear`) is not very close to the 5% level.
-``` {r echo=FALSE}
+A first solution is to use a non-parametric rank correlation such as Spearman (DEFINE). Here, the graph below shows that the influence of the outlier is much reduced and the type I error rate (= `r format(PsigSpear*100,digits=0)`%) is not very close to the 5% level.
+``` {r PlotSpearOultier, echo=FALSE, , fig.cap=fig_nums("PP3Spear")}
 PP3Spear
 ```
 
 ### Solution: robust parametric correlation
 
-``` {r echo=FALSE}
+``` {r SimulationWincorOutlier, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 resRob <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
 Sigma <- matrix(c(1,Rval,Rval,1),2,2)
@@ -712,11 +727,12 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
+    fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
 In contrast, the use of winsorized correlation (DEFINE) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by the graph below, which shows that the influence of the outlier is eliminated and the type I error rate (= `r PsigRob`) is very close to the 5% level.
 
-``` {r echo=FALSE}
+``` {r PlotRobOutlier, echo=FALSE, fig.cap=fig_nums("PP3Rob")}
 PP3Rob
 ```
 
@@ -726,7 +742,7 @@ Researchers want to estimate correlation across different subgroups.For instance
 
 ### How sensisitive are correlations to subgroups?
 
-``` {r echo=FALSE}
+``` {r SimulationSubgroup, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 Sigma <- matrix(c(1,Rval,Rval,1),2,2)
 SDdistSub <- 2
@@ -748,14 +764,16 @@ SubG4 <- ggplot(Scatter1) +
                      values = cols,
                      labels = POP)+
   labs(title = "",x="Random variable 1" , y="Random variable 2")
+  fig_nums("SubG4",paste("Example of correlation biased by differences between subgroups", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
 To generate subgroups, we first generate the x and y parameteres for the 'r PopSize' individuals. We will then split the population into two subgroups and add a value of `r SDdistSub` to each the values of both varialbes for one of the two subgroups. By doing so, one obtains the following grahics.
 
-``` {r echo=FALSE}
+``` {r PlotExampleSubgroup, echo=FALSE, fig.cap=fig_nums("SubG4")}
 SubG4
 ```
-``` {r, echo=FALSE}
+
+``` {r SimulationSubgroups, echo=FALSE}
 set.seed(12)# to make sure everybody gets the same results
 resSub <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
 resSub75 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
@@ -807,6 +825,9 @@ PsigSub75_15 <- CountSigSub75_15/length(resSub75_15$Sig)
 CountSigSub75 <- sum(resSub75$Sig)
 PsigSub75 <- CountSigSub75/length(resSub75$Sig)
 
+CountSigSubNDBC <- sum(resSub$NoDifButCorrel)
+PsigNDBC <- CountSigSubNDBC/length(resSub$NoDifButCorrel)
+
 resSub$Sig = factor(1-resSub$Sig)
 PP2Sub <- ggplot(resSub, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
@@ -823,6 +844,7 @@ PP2Sub <- ggplot(resSub, aes(x=p, fill=Sig)) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
+  fig_nums("PP2Sub",paste("distribution of p-values when the simulated correlations are biased by subgroup differences. Here, the subgroups are ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1), t=c('a','b'))
   PP3Sub <- ggplot() +  
@@ -854,45 +876,31 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   
-  NDBC_color=c('red','white')
-  PsigNDBC <- sum(resSub$NoDifButCorrel)/length(resSub$NoDifButCorrel)
-  dNoDifButCorrel=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigNDBC), y2=c(PsigNDBC,1), t=c('a','b'))
-  PP3NoDifButCorrel <- ggplot() +  
-    geom_rect(data=dNoDifButCorrel, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
-              color="black") +
-    scale_fill_manual(values = NDBC_color, 
-                      name="",
-                      labels=c("p<=0.05", "p>0.05")) +
-    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
-    labs(title="",y="\n \n \nProportion of simulations without sig. diff. but with sig. correl")+
-    scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
+    fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
-We observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulations will allow us to understand the effect of subgroups on the number of false-positive correlations.The two graphs below illustrates that the presence of differences between the subgroups have a massive effect on the simulated correlations. For instance, if the two subgroups are 1SD away, we observe `r format(PsigSub, digits=2)` % significant p-values! which is far above the expected 5% threshold. 
+We observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulations will allow us to understand the effect of subgroups on the number of false-positive correlations.The two graphs below illustrates that the presence of differences between the subgroups have a massive effect on the simulated correlations. For instance, if the two subgroups are 1SD away, we observe `r format(PsigSub*100, digits=0)` % significant p-values! which is far above the expected 5% threshold. 
 
-``` {r echo=FALSE}
+``` {r PlotDistriP_subgroups, echo=FALSE,fig.cap=fig_nums("PP2Sub")}
 PP2Sub
-  
-PP3Sub
-
-#PP3NoDifButCorrel
 ```
 
+``` {r PlotProportionP_subgroups, echo=FALSE,fig.cap=fig_nums("PP3Sub")}  
+PP3Sub
+```
 
+Note that for `r format(PsigNDBC*100, digit=0)`% of these significant correlations, the between groups difference was not significant. Yet, these subgroups yielded a positive correlation.
 
-Note that for `r format(PsigNDBC, digit=2)`% of these significant correlations, the between groups difference was not significant. Yet, these subgroups yielded a positive correlation.
-
-In addition, the bigger the groups get, the smaller the difference between the subgroups must be to give rise to a significant correlation. For instance, for a sample of `r PopSize`, a difference of `r SDdistSub75` standard deviation between group does not inflate the type I error rate (`r PsigSub75_15`% of correlations are significant). However, this difference becomes important for larger populations. For instance, a difference of `r SDdistSub75` increase the type I error rate to `r PsigSub75` and this number increases with sample size.
+In addition, the bigger the groups get, the smaller the difference between the subgroups must be to give rise to a significant correlation. For instance, for a sample of `r PopSize`, a difference of `r SDdistSub75` standard deviation between group does not inflate the type I error rate (`r format(PsigSub75_15*100, digits=0)`% of correlations are significant). However, this difference becomes important for larger populations. For instance, a difference of `r SDdistSub75` increase the type I error rate to `r PsigSub75` and this number increases with sample size.
 
 it is self-evident that these subgroups will also affect the magnitude of the false-positive correlations, which will tend to be larger because of the subgroups. This can easily be visualized with the ShinyApp. 
 
 ### Solution to the subgroup problem
 
 We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take 
+
 ### Spearmann is not a solution
 
-``` {r, echo=FALSE}
+``` {r SimulationSpear_subgroups, echo=FALSE}
 set.seed(12)# to make sure everybody gets the same results
 resSubSpear <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
 Sigma <- matrix(c(1,Rval,Rval,1),2,2)
@@ -941,12 +949,16 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
+      fig_nums("PP3SubSpear",paste("Inability of Spearman correlation to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+```
+
+``` {r PlotProportionSpear_subgroups, echo=FALSE,fig.cap=fig_nums("PP3SubSpear")}
   PP3SubSpear
 ```
 
 ### Taking subgroups into account
 
-``` {r, echo=FALSE}
+``` {r SimulationRegression, echo=FALSE}
 set.seed(12)# to make sure everybody gets the same results
 # Regression
 resReg <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
@@ -998,6 +1010,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
+  
+  fig_nums("PP3Reg",paste("Ability of regression to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for standardized regression coefficient when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 
   RsigReg <- mean(resReg$R[resReg$Sig==0])
   RallReg <- mean(resReg$R)
@@ -1025,18 +1039,19 @@ PP1Reg <- ggplot(resReg, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
+fig_nums("PP1Reg", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
 When correlating parameters across different subgroups, one has to take them into account. This can be done by means of regression. In a simple linear regression $ y = a*x + b $, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized. To z-normalize a variable, one needs to substract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero> To take subgroups into account, one needs to modify the regression question as follow:
 $$ y = a*x + c*G $$ where $G$ is equal to zero for one subgroup and one for the other. This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. 
 
-``` {r echo=FALSE}
+``` {r PlotProportionReg_subgroups, echo=FALSE, fig.cap=fig_nums("PP3Reg")}
 PP3Reg
 ```
 
 Estimation of correlation coefficients in the presence of two subgroups looks different than when there are no subgroups. 
 
-``` {r echo=FALSE}
+``` {r PlotDistriR0_Reg_subgroups, echo=FALSE, fig.cap=fig_nums("PP1Reg")}
 PP1Reg
 ```
 
@@ -1063,35 +1078,6 @@ Fcolor <- c("orange","lightblue")
 CountSigReg50 <- sum(resReg50$Sig)
 PsigReg50 <- CountSigReg50/length(resReg50$Sig)
 resReg50$Sig = factor(1-resReg50$Sig)
-d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1), t=c('a','b'))
-  PP3Reg50 <- ggplot() +  
-    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
-              color="black") +
-    scale_fill_manual(values = Fcolor, 
-                      name="",
-                      labels=c("p<=0.05", "p>0.05")) +
-    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
-               hjust = "center", 
-               vjust = "bottom", 
-               colour = "red", 
-               label.size = NA, 
-               size = 3,
-               fill = NA)+
-    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
-               hjust = "center", 
-               vjust = "center", 
-               colour = "black", 
-               label.size = NA, 
-               size = 3,
-               fill = NA)+
-    geom_hline(yintercept=0, color = "black") +
-    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
-    labs(title="",y="\n \n \nProportion of simulations")+
-    scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
 
   RsigReg50 <- mean(resReg50$R[resReg50$Sig==0])
   RallReg50 <- mean(resReg50$R)
@@ -1119,9 +1105,11 @@ PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
+fig_nums("PP1Reg50", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
 Taking subgroups into account does not prevent us from detecting correlations when they are present. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (R=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (R=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on the graph below).
-``` {r echo=FALSE}
+
+``` {r PlotDistriR50_Reg_subgroups, echo=FALSE, fig.cap=fig_nums("PP1Reg50")}
 PP1Reg50
 ```
 
