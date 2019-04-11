@@ -27,8 +27,13 @@ fig_nums <- captioner()
 2) Use actual variables that we know are not correlated: height and QI? and some that are correlated with R=0.5: height and weight (even though this is not perfect)
 3) make choise between simulation tutorial and statistics tutorial
 4) link with ShinyApp
+5) For fig8, add arrows showing Type II error, power and type I error. This is the first such representation.
+6) add cross-references to Figure (remove below and above)
+7) replace R code by latex notation $i$
+8) add comments to code
 
 Refer to Bishop blog:
+
 http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html
 
 https://deevybee.blogspot.com/2017/11/anova-t-tests-and-regression-different.html
@@ -47,7 +52,7 @@ Refer to lakens on ameliorating the interpretation of p-values
 
 ```{r ParamDef, echo=FALSE}
 PopSize=15
-Nsim=100 # should be 1000
+Nsim=1000 # should be 1000
 ```
 
 Let's imagine the following experiment. Researchers in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants because they think that these two parameters are correlated with each other. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant `i`, they have two observations: `(x~i~,y~i~)` where `x~i~` is the height of the participant and `y~i~` is his/her working memory capacity.
@@ -320,6 +325,8 @@ fig_nums("PP2_50", paste("distribution of p-values when the simulated R is ", Rv
 PP2_50
 ```
 
+This graph also shows that non-significant p-values cannot be considered as proof that there are no correlation between the variables x and y. All the non-significant correlations on the graph above are false-negative (they are not significant even though x and y are correlated).
+
 ``` {r RectangleErrorTypeR50, echo=FALSE}
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
   PP3_50 <- ggplot() +  
@@ -357,7 +364,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
 
 However, note that not all simulated correlations are significant. The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100%-power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation. This is illustrated on the graph below:
 
-``` {r PlotRectangleErrorTypeR50, echo=FALSE, fig.cap=fig_nums(PP3_50)}
+``` {r PlotRectangleErrorTypeR50, echo=FALSE, fig.cap=fig_nums("PP3_50")}
 PP3_50
 ```
 
