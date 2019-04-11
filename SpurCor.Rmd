@@ -3,13 +3,16 @@ title: "Simulating for understanding p-values"
 author: "Jean-Jacques Orban de Xivry"
 date: "April 8, 2019"
 output:
-  html_document: default
-  pdf_document: default
-  word_document: default
+  html_document:
+    fig_caption: yes
+  pdf_document:
+    fig_caption: yes
+  word_document:
+    fig_caption: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.cap = " ")
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 library(ggplot2)
@@ -20,10 +23,9 @@ library(WRS2) # for wincor and pbcor
 
 1) Make terminology clearer: population-variable-sample-observations
 2) Use actual variables that we know are not correlated: height and QI? and some that are correlated with R=0.5: height and weight (even though this is not perfect)
-3) make choise between simulation tutorial and statistis tutorial
-4) compute CI instead of range for precision of correlations
-5) link with ShinyApp
-6) Fig number for reference and fig legends
+3) make choise between simulation tutorial and statistics tutorial
+4) link with ShinyApp
+5) Fig number for reference and fig legends
 
 Refer to Bishop blog:
 http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html
@@ -38,7 +40,7 @@ https://www.slideshare.net/deevybishop/introduction-to-simulating-data-to-improv
 
 ```{r, echo=FALSE}
 PopSize=15
-Nsim=100 # should be 1000
+Nsim=10 # should be 1000
 ```
 
 Let's imagine the following experiment. Researchers in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants because they think that these two parameters are correlated with each other. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant `i`, they have two observations: `(x~i~,y~i~)` where `x~i~` is the height of the participant and `y~i~` is his/her working memory capacity.
@@ -64,7 +66,7 @@ Off course, one should not expect any correlation between x and y as these are s
 One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw `r PopSize` samples from a normal distribution, we can have `x=mvrnorm(``r PopSize` `,0,1,empirical = FALSE)` and `y=mvrnorm(` `r PopSize` `,0,1,empirical = FALSE)`
 
 Together, these two variables are uncorrelated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits = 3)`). This is expected as we sampled two random variables. Therefore, the correlation between these two samples should be non-significant as there is not link between them.
-````{r, echo=FALSE} 
+````{r, echo=FALSE, fig.cap='a caption'} 
 PP4
 ```
 
@@ -163,8 +165,8 @@ PP1 <- ggplot(res, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=Rval, linetype="dashed", color = "darkblue", size = 1) +
-    geom_label(aes(x = Rval, y=Inf, label = "Actual"),
+    geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", size = 1) +
+    geom_label(aes(x = Rall, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
                colour = "darkblue", 
@@ -220,8 +222,8 @@ PP175 <- ggplot(res75, aes(x=R, fill=Sig)) +
              label.size = NA, 
              size = 3,
              fill = NA)+
-  geom_vline(xintercept=Rval, linetype="dashed", color = "darkblue", size = 1) +
-  geom_label(aes(x = Rval, y=Inf, label = "Actual"),
+  geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", size = 1) +
+  geom_label(aes(x = Rall, y=Inf, label = "All"),
              hjust = Rpos[2], 
              vjust = "top", 
              colour = "darkblue", 
@@ -418,8 +420,8 @@ PP150 <- ggplot(res, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=Rval50, linetype="dashed", color = "darkblue", size = 1) +
-    geom_label(aes(x = Rval50, y=Inf, label = "Actual"),
+    geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", size = 1) +
+    geom_label(aes(x = Rall, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
                colour = "darkblue", 
@@ -449,7 +451,7 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
                size = 3,
                fill = NA)+
     geom_vline(xintercept=Rall28, linetype="dashed", color = "darkblue", size = 1) +
-    geom_label(aes(x = Rall28, y=Inf, label = "Actual"),
+    geom_label(aes(x = Rall28, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
                colour = "darkblue", 
@@ -461,7 +463,7 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
     labs(title="",x="correlation coefficient" , y="Count")
 ```
 
-On the graph above, we can see that while many simulated correlations are around the value of `r Rval50`. However, the simulated correlations span a large range between `r format(min(res$R),digits = 2)` and  `r format(max(res$R),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the range of simulated correlation ([`r format(min(res28$R),digits = 2)`,`r format(max(res28$R),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
+On the graph above, we can see that while many simulated correlations are around the value of `r Rval50`. However, the simulated correlations exhibited a large 95% confidence interval: between `r format(quantile(res$R,0.025),digits = 2)` and  `r format(quantile(res$R,0.975),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the 95% confidence interval of simulated correlation ([`r format(quantile(res28$R,0.025),digits = 2)`,`r format(quantile(res28$R,0.975),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
 
 ``` {r echo=FALSE}
 PP150_28
@@ -645,11 +647,13 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
           axis.ticks.x=element_blank())
 ```
 
-A first solution is to use a non-parametric rank correlation such as Spearman. Here, the graph below shows that the influence of the outlier is much reduced and the type I error rate (= `r PsigSpear`) is very close to the 5% level.
+A first solution is to use a non-parametric rank correlation such as Spearman (DEFINE). Here, the graph below shows that the influence of the outlier is much reduced and the type I error rate (= `r PsigSpear`) is not very close to the 5% level.
 ``` {r echo=FALSE}
 PP3Spear
 ```
+
 ### Solution: robust parametric correlation
+
 ``` {r echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 resRob <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
@@ -701,16 +705,429 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
           axis.ticks.x=element_blank())
 ```
 
-In contrast, the use of winsorized correlation solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by the graph below, which shows that the influence of the outlier is eliminated and the type I error rate (= `r PsigRob`) is very close to the 5% level.
+In contrast, the use of winsorized correlation (DEFINE) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by the graph below, which shows that the influence of the outlier is eliminated and the type I error rate (= `r PsigRob`) is very close to the 5% level.
+
 ``` {r echo=FALSE}
 PP3Rob
 ```
 
-## How sensisitive are correlations to subgroups?
+## influence of subgroups on correlation: simulation and solution
+
+Researchers want to estimate correlation across different subgroups.For instance, in my own research, I wanted to correlate the amount of explicit motor learning with working memory capacity across both young and old participants. Yet, working memory capacity is known to decline with aging and so is the explicit component of motor adaptation. This does not mean that these two variables should be correlated across participants. The goal of this section is to investigate the influence of subgroups on correlations. We will start by illustrate the problem via simulations.
+
+### How sensisitive are correlations to subgroups?
+
+``` {r echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+SDdistSub <- 2
+POP <- c("SubGroup1","SubGroup2")
+D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+SubN = round(PopSize/2)
+D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub,len=SubN*2), nrow = SubN)
+Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+D1 <- D[,1]
+D2 <- D[,2]
+Scatter1 <- data.frame(D1=D[,1],D2=D[,2],Zf= factor(Z))
+Rsub<-rcorr(D[,1],D[,2])
+
+cols <- c("royalblue3", "orangered2" )
+SubG4 <- ggplot(Scatter1) + 
+  geom_point(aes(x=D1, y=D2, color=Zf))+
+  geom_smooth(aes(x=D1, y=D2),method='lm',se=FALSE,formula = y~x)+
+  scale_color_manual(name = "Population(s)", 
+                     values = cols,
+                     labels = POP)+
+  labs(title = "",x="Random variable 1" , y="Random variable 2")
+```
+
+To generate subgroups, we first generate the x and y parameteres for the 'r PopSize' individuals. We will then split the population into two subgroups and add a value of `r SDdistSub` to each the values of both varialbes for one of the two subgroups. By doing so, one obtains the following grahics.
+
+``` {r echo=FALSE}
+SubG4
+```
+``` {r, echo=FALSE}
+set.seed(12)# to make sure everybody gets the same results
+resSub <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
+resSub75 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
+resSub75_15 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+SDdistSub75 = 0.5;
+for (i in c(1:Nsim)){
+  D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+  SubN = round(PopSize/2)
+  D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub,len=SubN*2), nrow = SubN)
+  Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+  R<-rcorr(D[,1],D[,2])
+  resSub[i,"R"] <- R$r[1,2]
+  resSub[i,"p"]<-R$P[1,2]
+  resSub[i,"Sig"]<-resSub[i,"p"]<0.05
+  T1 <- t.test(D[,1]~Z) # where y is numeric and x is a binary factor 
+  T2 <- t.test(D[,2]~Z) # where y is numeric and x is a binary factor
+  resSub[i,"NoDifButCorrel"] <- (((T2$p.value>0.05) + (T1$p.value>0.05)) * (resSub[i,"p"]<0.05))>0
+  
+  ## SDdist of 0.75 and N=PopSize
+  D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+  SubN = round(PopSize/2)
+  D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub75,len=SubN*2), nrow = SubN)
+  Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+  R<-rcorr(D[,1],D[,2])
+  resSub75_15[i,"R"] <- R$r[1,2]
+  resSub75_15[i,"p"]<-R$P[1,2]
+  resSub75_15[i,"Sig"]<-resSub75_15[i,"p"]<0.05
+  
+  ## SDdist of 0.75 and N=PopSize75
+  D <- mvrnorm(n = PopSize75, rep(0, 2), Sigma, empirical = FALSE)
+  SubN = round(PopSize75/2)
+  D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub75,len=SubN*2), nrow = SubN)
+  Z <- c(rep(0,SubN),rep(1,PopSize75-SubN))
+  R<-rcorr(D[,1],D[,2])
+  resSub75[i,"R"] <- R$r[1,2]
+  resSub75[i,"p"]<-R$P[1,2]
+  resSub75[i,"Sig"]<-resSub75[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+#general case
+CountSigSub <- sum(resSub$Sig)
+PsigSub <- CountSigSub/length(resSub$Sig)
+## SDdist of 0.75 and N=PopSize
+CountSigSub75_15 <- sum(resSub75_15$Sig)
+PsigSub75_15 <- CountSigSub75_15/length(resSub75_15$Sig)
+## SDdist of 0.75 and N=PopSize75
+CountSigSub75 <- sum(resSub75$Sig)
+PsigSub75 <- CountSigSub75/length(resSub75$Sig)
+
+resSub$Sig = factor(1-resSub$Sig)
+PP2Sub <- ggplot(resSub, aes(x=p, fill=Sig)) + 
+    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    scale_fill_manual(values = Fcolor) +
+    geom_hline(yintercept=CountSigSub, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = CountSigSub, label = "H0"), 
+               hjust = "left", 
+               vjust = "bottom", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    coord_cartesian(xlim = c(0, 1))+
+    theme(legend.position='none')+
+    scale_y_continuous(expand = c(0.1,0)) +
+    labs(title="",x="p-value" , y="Count")
+
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1), t=c('a','b'))
+  PP3Sub <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+  
+  NDBC_color=c('red','white')
+  PsigNDBC <- sum(resSub$NoDifButCorrel)/length(resSub$NoDifButCorrel)
+  dNoDifButCorrel=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigNDBC), y2=c(PsigNDBC,1), t=c('a','b'))
+  PP3NoDifButCorrel <- ggplot() +  
+    geom_rect(data=dNoDifButCorrel, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = NDBC_color, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations without sig. diff. but with sig. correl")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+```
+We observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulations will allow us to understand the effect of subgroups on the number of false-positive correlations.The two graphs below illustrates that the presence of differences between the subgroups have a massive effect on the simulated correlations. For instance, if the two subgroups are 1SD away, we observe `r format(PsigSub, digits=2)` % significant p-values! which is far above the expected 5% threshold. 
+
+``` {r echo=FALSE}
+PP2Sub
+  
+PP3Sub
+
+#PP3NoDifButCorrel
+```
+
+
+
+Note that for `r format(PsigNDBC, digit=2)`% of these significant correlations, the between groups difference was not significant. Yet, these subgroups yielded a positive correlation.
+
+In addition, the bigger the groups get, the smaller the difference between the subgroups must be to give rise to a significant correlation. For instance, for a sample of `r PopSize`, a difference of `r SDdistSub75` standard deviation between group does not inflate the type I error rate (`r PsigSub75_15`% of correlations are significant). However, this difference becomes important for larger populations. For instance, a difference of `r SDdistSub75` increase the type I error rate to `r PsigSub75` and this number increases with sample size.
+
+it is self-evident that these subgroups will also affect the magnitude of the false-positive correlations, which will tend to be larger because of the subgroups. This can easily be visualized with the ShinyApp. 
 
 ### Solution to the subgroup problem
+
+We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take 
 ### Spearmann is not a solution
+
+``` {r, echo=FALSE}
+set.seed(12)# to make sure everybody gets the same results
+resSubSpear <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+for (i in c(1:Nsim)){
+  D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+  SubN = round(PopSize/2)
+  D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub,len=SubN*2), nrow = SubN)
+  Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+  R<-rcorr(D[,1],D[,2],type='spearman')
+  resSubSpear[i,"R"] <- R$r[1,2]
+  resSubSpear[i,"p"]<-R$P[1,2]
+  resSubSpear[i,"Sig"]<-resSubSpear[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+#general case
+CountSigSubSpear <- sum(resSubSpear$Sig)
+PsigSubSpear <- CountSigSubSpear/length(resSubSpear$Sig)
+
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSubSpear,1), t=c('a','b'))
+  PP3SubSpear <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+  PP3SubSpear
+```
+
 ### Taking subgroups into account
 
+``` {r, echo=FALSE}
+set.seed(12)# to make sure everybody gets the same results
+# Regression
+resReg <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval,Rval,1),2,2)
+for (i in c(1:Nsim)){
+  D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+  SubN = round(PopSize/2)
+  D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub,len=SubN*2), nrow = SubN)
+  Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+  Add <- data.frame(D1=D[,1],D2=D[,2],Z=Z)
+  Rrr <- lm(D2 ~ D1+Z, Add)
+  SumRrr <- summary(Rrr, correlation = TRUE)
+  resReg[i,"R"] <-SumRrr$coefficients[2,1] #Normalized coefficient
+  resReg[i,"p"] <- SumRrr$coefficients[2,4] #p-value
+  resReg[i,"Sig"]<-resReg[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+#general case
+CountSigReg <- sum(resReg$Sig)
+PsigReg <- CountSigReg/length(resReg$Sig)
+resReg$Sig = factor(1-resReg$Sig)
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1), t=c('a','b'))
+  PP3Reg <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+  RsigReg <- mean(resReg$R[resReg$Sig==0])
+  RallReg <- mean(resReg$R)
+  if (RsigReg>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
+PP1Reg <- ggplot(resReg, aes(x=R, fill=Sig)) + 
+    geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
+    scale_fill_manual(values = Fcolor) +
+    coord_cartesian(xlim = c(-1, 1))+
+    geom_vline(xintercept=RsigReg, linetype="dashed", color = "darkorange", size = 1) +
+    geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
+               hjust = Rpos[1], 
+               vjust = "top", 
+               colour = "darkorange", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_vline(xintercept=RallReg, linetype="dashed", color = "darkblue", size = 1) +
+    geom_label(aes(x = RallReg, y=Inf, label = "All"),
+               hjust = Rpos[2], 
+               vjust = "top", 
+               colour = "darkblue", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    theme(legend.position='none') +
+    scale_y_continuous(expand = c(0.15,0)) +
+    labs(title="",x="correlation coefficient" , y="Count")
+```
+
+When correlating parameters across different subgroups, one has to take them into account. This can be done by means of regression. In a simple linear regression $ y = a*x + b $, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized. To z-normalize a variable, one needs to substract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero> To take subgroups into account, one needs to modify the regression question as follow:
+$$ y = a*x + c*G $$ where $G$ is equal to zero for one subgroup and one for the other. This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. 
+
+``` {r echo=FALSE}
+PP3Reg
+```
+
+Estimation of correlation coefficients in the presence of two subgroups looks different than when there are no subgroups. 
+
+``` {r echo=FALSE}
+PP1Reg
+```
+
+``` {r, echo=FALSE}
+set.seed(12)# to make sure everybody gets the same results
+# Regression
+resReg50 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim),NoDifButCorrel=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval50,Rval50,1),2,2)
+for (i in c(1:Nsim)){
+  D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+  SubN = round(PopSize/2)
+  D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub,len=SubN*2), nrow = SubN)
+  Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+  Add <- data.frame(D1=D[,1],D2=D[,2],Z=Z)
+  Rrr <- lm(D2 ~ D1+Z, Add)
+  SumRrr <- summary(Rrr, correlation = TRUE)
+  resReg50[i,"R"] <-SumRrr$coefficients[2,1] #Normalized coefficient
+  resReg50[i,"p"] <- SumRrr$coefficients[2,4] #p-value
+  resReg50[i,"Sig"]<-resReg50[i,"p"]<0.05
+}
+
+Fcolor <- c("orange","lightblue")
+#general case
+CountSigReg50 <- sum(resReg50$Sig)
+PsigReg50 <- CountSigReg50/length(resReg50$Sig)
+resReg50$Sig = factor(1-resReg50$Sig)
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1), t=c('a','b'))
+  PP3Reg50 <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+  RsigReg50 <- mean(resReg50$R[resReg50$Sig==0])
+  RallReg50 <- mean(resReg50$R)
+  if (RsigReg50>Rval50){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
+PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) + 
+    geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
+    scale_fill_manual(values = Fcolor) +
+    coord_cartesian(xlim = c(-1, 1))+
+    geom_vline(xintercept=RsigReg50, linetype="dashed", color = "darkorange", size = 1) +
+    geom_label(aes(x = RsigReg50, y = Inf, label = "Sig."), 
+               hjust = Rpos[1], 
+               vjust = "top", 
+               colour = "darkorange", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_vline(xintercept=RallReg50, linetype="dashed", color = "darkblue", size = 1) +
+    geom_label(aes(x = RallReg50, y=Inf, label = "All"),
+               hjust = Rpos[2], 
+               vjust = "top", 
+               colour = "darkblue", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    theme(legend.position='none') +
+    scale_y_continuous(expand = c(0.15,0)) +
+    labs(title="",x="correlation coefficient" , y="Count")
+```
+Taking subgroups into account does not prevent us from detecting correlations when they are present. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (R=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (R=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on the graph below).
+``` {r echo=FALSE}
+PP1Reg50
+```
 
 ## extending this line of thought to the T-test
+
+if we follow the same line of reasoning, one can investigate the influence of outlier or subgroups on t-test. The results should be the same if one follows Bishop's blog.
+
+## it can become more complicated.
+
+Simulation to demonstrate how you should decide which covariates to adjust for in the context of a randomized controlled trial.
+https://twitter.com/statsepi/status/1115902270888128514
+
+# What have we learned?
+Simulations can be  useful to get insights on statistics.
+1) distribution of p-value under no correlation is flat. Same probability of observing p<0.05 than p>0.95
+2) if there is a correlation, simulations
+
+Simulations can be useful to test potential solution to known problems.
