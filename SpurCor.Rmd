@@ -4,15 +4,15 @@ author: "Jean-Jacques Orban de Xivry"
 date: "April 8, 2019"
 output:
   html_document:
-    fig_caption: yes
+    fig_caption: true
   pdf_document:
-    fig_caption: yes
+    fig_caption: true
   word_document:
-    fig_caption: yes
+    fig_caption: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.cap = " ")
+knitr::opts_chunk$set(echo = TRUE)
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 library(ggplot2)
@@ -40,7 +40,7 @@ https://www.slideshare.net/deevybishop/introduction-to-simulating-data-to-improv
 
 ```{r, echo=FALSE}
 PopSize=15
-Nsim=10 # should be 1000
+Nsim=100 # should be 1000
 ```
 
 Let's imagine the following experiment. Researchers in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants because they think that these two parameters are correlated with each other. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant `i`, they have two observations: `(x~i~,y~i~)` where `x~i~` is the height of the participant and `y~i~` is his/her working memory capacity.
@@ -65,8 +65,8 @@ In the first step of this tutorial, we will use `R` to build two variables x and
 Off course, one should not expect any correlation between x and y as these are sampled from random distribution.
 One can achieve that in R by using the `mvrnorm` function from the MASS package. To draw `r PopSize` samples from a normal distribution, we can have `x=mvrnorm(``r PopSize` `,0,1,empirical = FALSE)` and `y=mvrnorm(` `r PopSize` `,0,1,empirical = FALSE)`
 
-Together, these two variables are uncorrelated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits = 3)`). This is expected as we sampled two random variables. Therefore, the correlation between these two samples should be non-significant as there is not link between them.
-````{r, echo=FALSE, fig.cap='a caption'} 
+Together, these two variables are uncorrelated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits = 3)`). This is expected as we sampled two random variables. Therefore, the correlation between these two samples should be non-significant as there is not link between them. see \autoref{NoCorrel}
+````{r, echo=FALSE, fig.cap= "No correlation. \\label{NoCorrel}"} 
 PP4
 ```
 
