@@ -151,7 +151,7 @@ for (i in c(1:Nsim)){
 }
 ```
 
-In the code above the R-dataframe `res` stores the results of the correlation between x (first colunm of D - `D[,1]`) and y (second column of D = `D[,2]`) for each iteration of the simulations. The value of the correlation coefficient (`R$r[1,2]`) and the associated p-value (`R$p[1,2]`) are stored in this dataframe. One can use this dataframe to generate the histogram illustrating the distribution of p-values
+In the code above the R-dataframe `res` stores the results of the correlation between x (first colunm of D - $D[,1]$) and y (second column of D = $D[,2]$) for each iteration of the simulations. The value of the correlation coefficient ($R \$ r[1,2]$) and the associated p-value ($R \$ p[1,2]$) are stored in this dataframe. One can use this dataframe to generate the histogram illustrating the distribution of p-values
 
 ``` {r eval=FALSE}
 library(ggplot2)
