@@ -34,6 +34,7 @@ fig_nums <- captioner()
 8. add comments to code
 9. make assignments for each section
 10. Simulate too good to be true? if modest power, we should have a mix of significant and non-significant studies. Or is this too much???
+11. illustrate false positive with graphics (bar plot with blue and orange rectangles)
 
 Refer to Bishop blog:
 
@@ -223,6 +224,52 @@ Interestingly, even in the absence of correlation between x and y, there is a su
 assignment:
 check that increasing the sample size (value of PopSize in the code) does not influence the distribution of p-values when the two variables are unccorelated.
 
+``` {r RectangleErrorTypeR0, echo=FALSE}
+d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
+  PP3_0 <- ggplot() +  
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = Fcolor, 
+                      name="",
+                      labels=c("p<=0.05", "p>0.05")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
+    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = Psig),
+     lineend = 'butt', linejoin = 'bevel',
+     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
+    geom_label(aes(x = 0.8, y = Psig/2, label = "False-Positive"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
+               hjust = "center", 
+               vjust = "center", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+  fig_nums("PP3_0", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval, "and the sample size is", PopSize),display=FALSE)
+```
+
+```{r PlotRectangleR0, echo=FALSE, fig.cap=fig_nums("PP3_0")} 
+PP3_0
+```
+
 ### understanding the influence of sample size (and power) on the magnitude of the false-positive correlations
 
 ``` {r DistriRunderR0, echo=FALSE}
@@ -254,7 +301,7 @@ PP1 <- ggplot(res, aes(x=R, fill=Sig)) +
     labs(title="",x="correlation coefficient" , y="Count")
 fig_nums("PP1", paste("distribution of the correlations coefficient when R=", Rval, "and N=", PopSize),display=FALSE)
 ```
-The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size. In `r fig_nums("PP1", display = "cite")`, one can see that the simulated correlations with `r PopSize` samples span a range between `r min(res$R)` and `r max(res$R)`. However, only larger positive correlations (in orange on `r fig_nums("PP1", display = "cite")`) are significant. That is, with small sample size (here `r PopSize` observations for each variable), the false-positive correlations are large (absolute value > `r format(min(abs(res$R[res$Sig==0])), digits=2)`).
+The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size. In `r fig_nums("PP1", display = "cite")`, one can see that the simulated correlations with `r PopSize` samples span a range between `r format(min(res$R),digits=2)` and `r format(max(res$R),digits=2)`. However, only larger positive correlations (in orange on `r fig_nums("PP1", display = "cite")`) are significant. That is, with small sample size (here `r PopSize` observations for each variable), the false-positive correlations are large (absolute value > `r format(min(abs(res$R[res$Sig==0])), digits=2)`).
 
 ```{r PlotDistriRunderR0, echo=FALSE, fig.cap=fig_nums("PP1")} 
 PP1
@@ -337,9 +384,9 @@ Rval50 = 0.5
 
 ## simulating a single correlation R=`r Rval50`
 
-It is also interesting to simulate cases where the correlation is not zero. While simulating correlations with R=0 thaught us about false-positive (type I error), the importance of sample size and the multiple comparison problem, simulating corelation with $R<>0$ can teach us about power (and type II error), the precision of estimation and the consequences of publishing only significant studies.
+It is also interesting to simulate cases where the correlation is not zero. While simulating correlations with R=0 thaught us about false-positive (type I error), the importance of sample size and the multiple comparison problem, simulating corelation with $R\ne0$ can teach us about power (and type II error), the precision of estimation and the consequences of publishing only significant studies.
 
-To simulate two variables with a given correlation, one can  use the `mvnorm` function but this time with a covariance matrix exhibiting the value for the simulated correlation on the off-diagonal elements. For instance, if we want to simulate two variables with a correlation of R=`r Rval50`, then the covariance matrix is:
+To simulate two variables with a given correlation, one can  use the $mvnorm$ function but this time with a covariance matrix exhibiting the value for the simulated correlation on the off-diagonal elements. For instance, if we want to simulate two variables with a correlation of R=`r Rval50`, then the covariance matrix is:
 $$
 Sigma = \begin{pmatrix}
 1 & `r Rval50`\\
@@ -365,23 +412,22 @@ colnames(XY)<- c("height (xi)","weight")
 rownames(XY)<- c("Subj # 1","Subj # 2","Subj # 3","Subj # 4","Subj # 5","Subj # 6","Subj # 7","Subj # 8","Subj # 9","Subj # 10","Subj # 11","Subj # 12","Subj # 13","Subj # 14","Subj # 15")
 ```
 
-The generated values can be seen in the table below. One can see that individuals that appear to have a larger height also have a larger weight.
+
 
 ```{r DisplayMatrixR50, echo = FALSE, results = 'asis'}
 kable(XY, caption = "randomly generated value for the individuals of the population")
 ```
 
-This is even more apparent on  `r fig_nums("PP450", display = "cite")` where the relationship between height and weight is visible.
+The generated values can be seen in the table below. One can see that individuals that appear to have a larger height also have a larger weight. This is even more apparent on  `r fig_nums("PP450", display = "cite")` where the relationship between height and weight is visible.
 
 ```{r plotCorrelR50, echo=FALSE, fig.cap=fig_nums("PP450")}
 PP450
 ```
-Together, these two variables are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits=3)`). Off course, the correlation between these two variables is not exactly equal to the simulated value (R= `r Rval50`) We will see later how we can recover the actual simulated correlation. 
+Together, these two variables are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits=3)`). That is, the correlation between the two variables is not exactly equal to the simulated value (R= `r Rval50`) We will see later how we can recover the actual simulated correlation. 
 
 ## What is the expected p-value distribution if there is a correlation
 
-Now, we will repeat this process a number of times in order to obtain the distribution of the p-values when there is a correlation R=`r Rval50`. 
-When there is an underlying correlation between the two variables, the distribution of p-values becomes asymmetric with more p-values under 0.05.
+Now, we will repeat this process a number of times in order to obtain the distribution of the p-values when there is a correlation R=`r Rval50`as we did earlier when no correlation was present. The distribution of p-values was then completely flat (see `r fig_nums("PP2", display = "cite")`). In contrast, When there is an underlying correlation between the two variables, the distribution of p-values becomes asymmetric with more p-values under 0.05.
 ``` {r SimulationR50, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
@@ -412,7 +458,7 @@ fig_nums("PP2_50", paste("distribution of p-values when the simulated R is ", Rv
 PP2_50
 ```
 
-This graph also shows that non-significant p-values cannot be considered as proof that there are no correlation between the variables x and y. All the non-significant correlations on the graph above are false-negative (they are not significant even though x and y are correlated).
+`r fig_nums("PP2_50",display="CITE")` also shows that non-significant p-values cannot be considered as proof that there are no correlation between the variables x and y. All the non-significant correlations on the graph above are false-negative (they are not significant even though x and y are correlated). False-negative correlations correspond to type II error. These correlations are non-significant while the sampled variables x and y actually are. The type II error is linked to the power of an experiment.
 
 ``` {r RectangleErrorTypeR50, echo=FALSE}
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
@@ -423,7 +469,17 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+    geom_segment(aes(x = 0.75, y = 1, xend = 0.75, yend = Psig),
+     lineend = 'butt', linejoin = 'bevel',
+     size = 0.5, arrow = arrow(length = unit(0.2, "inches")))+
+    geom_label(aes(x = 0.8, y = 1-Psig/2, label = "False-Negative"), 
+               hjust = "center", 
+               vjust = "bottom", 
+               colour = "black", 
+               label.size = NA, 
+               size = 3,
+               fill = NA)+
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -431,7 +487,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
                size = 3,
                fill = NA)+
     geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
                hjust = "center", 
                vjust = "center", 
                colour = "black", 
@@ -442,14 +498,13 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
+    theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
   fig_nums("PP3_50", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
 
 ### understanding power
 
-However, note that not all simulated correlations are significant. The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100%-power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation. This is illustrated on the graph below:
+However, note that not all simulated correlations are significant. The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100%-power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation (see `r fig_nums("PP3_50", display="CITE")` for an illustration).
 
 ``` {r PlotRectangleErrorTypeR50, echo=FALSE, fig.cap=fig_nums("PP3_50")}
 PP3_50
@@ -505,12 +560,16 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
   fig_nums("PP28", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
 ```
 
-As indicated on this graph, the expected power of an experiment is 80% (or 90%). Yet, this is here not the case. To detect a correlation R=`r Rval`, one needs `r PopSize28` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%.
+As indicated on this graph, the expected power of an experiment is 80% (or 90%). Yet, this is here not the case. To detect a correlation R=`r Rval`, one needs `r PopSize28` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%. The power of an experiment depends on the size of the effect (here, the strength of the correlation) and on the number of samples. 
 ``` {r RectangleErrorTypeR50_N28, echo=FALSE, fig.cap=fig_nums("PP28")}
 PP28
 ```
 
 This manipulations demonstrate how one can get insights about the required sample size for detecting a correlation of a given value, do some simulations.
+
+The problem with power is that we rarely now in advance how big the effect size will be.
+
+Assignment: test the influence of effect size on power
 
 ### effect of sample size on the accuracy of correlation estimation.
 
