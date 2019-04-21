@@ -57,8 +57,9 @@ Rval=0
 Rval50=0.5
 ```
 
-Let's imagine the following experiment. Researchers in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants because they think that these two parameters are correlated with each other. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant $i$, they have two observations: $(x_i,y_i)$ where $x_i$ is the height of the participant and $y_i$ is his/her working memory capacity.
-To simulate this experiment numerically, we can generate `r PopSize` random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated height of each participant and `r PopSize` different random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated working memory capacity of each participant. A mean of 0 and a standard deviation of 1 were chosen for simplicity but all the arguments below hold if ones picks another mean and/or another standard deviation. By doing this, we have generated `r PopSize` pairs of height and working memory capacity. To follow the idea of our Syldavian researchers, we can then compute the correlation between height and working memory capacity of our randomly generated population.
+Let's imagine the following experiment. Researchers from Klow in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant $i$, they have two observations: $(x_i,y_i)$ where $x_i$ is the height of the participant and $y_i$ is his/her working memory capacity. Then, the researchers decided to test the correlation between these two variables for their population.
+There is no reason whatsoever to expect a correlation between height and working memory capacity. This should be zero. 
+We can simulate this experiment numerically by generating `r PopSize` random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated height of each participant and `r PopSize` different random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated working memory capacity of each participant. A mean of 0 and a standard deviation of 1 were chosen for simplicity but all the arguments below hold if ones picks another mean and/or another standard deviation. By doing this, we have generated `r PopSize` pairs of height and working memory capacity. To follow the idea of our Syldavian researchers, we can then compute the correlation between height and working memory capacity of our randomly generated population.
 
 ## simulating a single correlation between two randomly generated samples
 
@@ -89,17 +90,17 @@ We then obtain the following matrices:
 kable(XY, caption = "randomly generated value for the individuals of the population")
 ```
 
-These values are unitless because they have been normalized. Some of them are positive other negative values.
-
-Now that we have generated data for height and working memory capacity for each individual, we can test whether these two parameters are correlated. We wil first use the Pearson's correlation, which is used in most scientific studies.
-Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated datasets have a correlation coefficient R= `r format(R$r[1,2], digits = 2)` (p-value = `r format(R$P[1,2], digits = 2)`). Given the process used for generated this data, we indeed expected a low correlation and a non-significant p-values as there is not link between them.
+These values are unitless. Some of them are positive other negative values.Now that we have generated data for height and working memory capacity for each individual, we can test whether the correlation between these two parameters. We wil first use the Pearson's correlation, which is used in most scientific studies.
+Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated parameters have a correlation coefficient R= `r format(R$r[1,2], digits = 2)` (p-value = `r format(R$P[1,2], digits = 2)`). Interstingly, while the two variables should be independent (height and working memory were generated randomly and independently), their correlation coefficient is not exactly zero. Yet, it is low (and non-significant), which means that we cannot conclude from this data that the variables height and working memory capacity are related (and we cannot conclude that these are not correlated either).
 ````{r plotR0, echo=FALSE, fig.cap= fig_nums("PP4")} 
 PP4
 ```
 
-Yet, it is also possible that some of these correlations between randomly generated data will be significant. Such significant correlations between randomly generated parameters are called false-positive. That is, the correlation between the parameters samples in `r PopSize` individuals suggest that the two variables (height and working memory capacity) are correlated despite them being not.
+Now, this is the data from a single city. Let's know simulate what would happen if the same correlation was computed for `r Nsim` different towns with more than 1000 inhabitants. In this case, we should repeat the process `r Nsim` times in order to know whether the result obtained for `r fig_nums("PP4", display = "cite")` is a special case or not. That is, for every simulated city (N=`r Nsim`), we will generate random numbers for the height and for the working memory capacity. We will then obtain the correlation coefficient and p-value for these parameters for every one of the `r Nsim` towns.
 
 ## simulating multiple correlation between two randomly generated samples
+
+Being able to perform these simulations in any programming language has certainly a large added value. The interested reader can use the code below to perform those simulations in R. For the readers who do not have time or willingness to do so, they can use the web application developped for this paper (See ShinyApp section below).
 
 ### doing that in R
 
@@ -571,7 +572,7 @@ As indicated on `r fig_nums("PP28",display="cite")`, the expected power of an ex
 PP28
 ```
 
-This manipulations demonstrate how simulations can yield insights about the required sample size for detecting a correlation of a given value. The problem with power is that we rarely now in advance how big the effect size (e.g. the strengthh the correlation) will be.
+This manipulations demonstrate how simulations can yield insights about the required sample size for detecting a correlation of a given value (Here, R=`r Rval50`). The problem with power is that we rarely now in advance how big the effect size (e.g. the strengthh the correlation) will be.
 
 Assignment: test the influence of effect size on power
 
@@ -641,7 +642,7 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
 fig_nums("PP150_28", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
 ```
 
-On `r fig_nums("PP150_28",display="cite")`, we can see that while many simulated correlations are around the value of `r Rval50`, the value of the obtained correlations is spread. Indeed, the simulated correlations exhibited a large 95% confidence interval: between `r format(quantile(res$R,0.025),digits = 2)` and  `r format(quantile(res$R,0.975),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the 95% confidence interval of simulated correlation ([`r format(quantile(res28$R,0.025),digits = 2)`,`r format(quantile(res28$R,0.975),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
+On `r fig_nums("PP150_28",display="cite")`, we can see that while many simulated correlations are around the value of `r Rval50`, the value of the obtained correlations are spread over a large interval. Indeed, the simulated correlations exhibited a large 95% confidence interval: between `r format(quantile(res$R,0.025),digits = 2)` and  `r format(quantile(res$R,0.975),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the 95% confidence interval of simulated correlation ([`r format(quantile(res28$R,0.025),digits = 2)`,`r format(quantile(res28$R,0.975),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
 
 ``` {r PlotDistriR_R50_N28, echo=FALSE, fig.cap=fig_nums("PP150_28")}
 PP150_28
@@ -649,7 +650,7 @@ PP150_28
 
 ### understanding that publication bias inflates effect size
 
-The graph above also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line on the graphs above, with N= `r PopSize28`, average correlation is `r format(Rsig28,digits=3)`), this average correlation appears to overestimate the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant studies is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
+`r fig_nums("PP150_28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in `r fig_nums("PP150_28",display="cite")`, with N= `r PopSize28`), this average correlation (mean R=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
 If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation.
 
 # Learning about sensitivity of correlations from simulated correlations.
