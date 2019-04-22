@@ -18,11 +18,12 @@ report <- function(ListOut){
   CountSig <- sum(dat$Sig)
   Psig <- CountSig/length(dat$Sig)
   dat$Sig = factor(1-dat$Sig)
-  Fcolor <- c("orange","lightblue")
+  Fcolor <- c("lightblue")
+
   Rsig<-0
   if (sum(dat$Sig==1)<length(dat$Sig)){
     Rsig <- mean(dat$R[dat$Sig==0])
-    Fcolor <- c("lightblue")
+    Fcolor <- c("orange","lightblue")
   }
   
   Rall <- mean(dat$R)
