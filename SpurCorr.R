@@ -20,7 +20,10 @@ report <- function(ListOut){
   dat$Sig = factor(1-dat$Sig)
   Fcolor <- c("orange","lightblue")
   Rsig<-0
-  if (sum(dat$Sig==1)<length(dat$Sig)){Rsig <- mean(dat$R[dat$Sig==0])}
+  if (sum(dat$Sig==1)<length(dat$Sig)){
+    Rsig <- mean(dat$R[dat$Sig==0])
+    Fcolor <- c("lightblue")
+  }
   
   Rall <- mean(dat$R)
   if (Rsig>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
@@ -68,6 +71,7 @@ report <- function(ListOut){
     labs(title="",x="p-value" , y="Count")
   
   d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
+  Fcolor <- c("orange","lightblue")
   PP3 <- ggplot() +  
     geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
               color="black") +
