@@ -27,7 +27,6 @@ fig_nums <- captioner()
 1. Make terminology clearer: population-variable-sample-observations
 8. add comments to code
 9. make assignments for each section
-10. Simulate too good to be true? if modest power, we should have a mix of significant and non-significant studies. Or is this too much??? --> easy with r=0.5 and N=15
 12. does Bayes Factor solves it? (solve the influence of outliers and subgroups on significance of correlation)
 
 Refer to Bishop blog:
