@@ -1,7 +1,7 @@
 ---
-title: "Simulating for understanding p-values"
+title: "Simulating correlations for understanding significance testing, its link to estimation of the effect size and how irregularities in the data can yield spurious results"
 author: "Jean-Jacques Orban de Xivry"
-date: "April 8, 2019"
+date: "April 28, 2019"
 output:
   html_document:
     fig_caption: true
@@ -25,12 +25,9 @@ fig_nums <- captioner()
 ## To do for JJ
 
 1. Make terminology clearer: population-variable-sample-observations
-2. Use actual variables that we know are not correlated: height and QI? and some that are correlated with R=0.5: height and weight (even though this is not perfect)
-6. add cross-references to Figure (remove below and above)
-7. replace R code by latex notation $i$
 8. add comments to code
 9. make assignments for each section
-10. Simulate too good to be true? if modest power, we should have a mix of significant and non-significant studies. Or is this too much???
+12. does Bayes Factor solves it? (solve the influence of outliers and subgroups on significance of correlation)
 
 Refer to Bishop blog:
 
@@ -46,15 +43,21 @@ https://www.slideshare.net/deevybishop/introduction-to-simulating-data-to-improv
 
 # Introduction
 
+Statistical significance is at the heart of a philosophical debate. Should we abandon the use of p-values, should we use a more severe significance threshold or should we use an adapted one? Is the Bayes Factor better suited for science than the p-values. These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used. Furthermore, many people do not have a lot of insights how p-values behave in different circumstances. Here, we use our ability to randomly generate correlated or uncorrelated variables as a tool to get insights into p-values linked to correlations and many problems that have been discussed in science.
+
+But p-values on their own have very little value if they are not coupled to the effect size of an effect. This part is linked to publication bias. That is, people do not cherish not significant effect and rarely published them while significant effects are published very easily. We will thus use simulation to understand how publication bias 
+
+Correlations were chosen because they are very frequently used in scientific papers. Yet, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
+
 Refer to lakens on ameliorating the interpretation of p-values
 
 # Learning about statistics from simulated correlations.
 
 ```{r ParamDef, echo=FALSE}
-PopSize=15
-Nsim=50 # should be 1000
-Rval=0
-Rval50=0.5
+PopSize=15 # population size
+Nsim=100 # number of generated samples; should be 10000
+Rval=0 # correlation coeffecient in the absence of effect
+Rval50=0.5 # correlation coefficient when there is an effect
 ```
 
 Let's imagine the following experiment. Researchers from Klow in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant $i$, they have two observations: $(x_i,y_i)$ where $x_i$ is the height of the participant and $y_i$ is his/her working memory capacity. Then, the researchers decided to test the correlation between these two variables for their population.
@@ -71,14 +74,17 @@ In summary, to generate two independent variables (with zero correlations), we w
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 set.seed(12)# to make sure everybody gets the same results
+# drawing random numbers for the variable X (PopSize sample, mean = 0, SD=1)
 x=mvrnorm(PopSize,0,1,empirical = FALSE)
+# drawing random numbers for the variable X (PopSize sample, mean = 0, SD=1)
 y=mvrnorm(PopSize,0,1,empirical = FALSE)
+# creating a dataframe to display the table
 XY = data.frame(Xi = x,yi = y)
 colnames(XY)<- c("height (xi)","working memory capacity (yi)")
-rownames(XY)<- c("Subj # 1","Subj # 2","Subj # 3","Subj # 4","Subj # 5","Subj # 6","Subj # 7","Subj # 8","Subj # 9","Subj # 10","Subj # 11","Subj # 12","Subj # 13","Subj # 14","Subj # 15")
+rownames(XY)<- c("Subj # 1","Subj # 2","Subj # 3","Subj # 4","Subj # 5","Subj # 6","Subj # 7","Subj # 8","Subj # 9","Subj # 10","Subj # 11","Subj # 12","Subj # 13","Subj # 14","Subj # 15") # computing correlation coefficient
 R<-rcorr(x,y)
-Scatter1 <- data.frame(x,y)
-PP4 <- ggplot(Scatter1, aes(x=x, y=y)) +
+# plotting the data
+PP4 <- ggplot(XY, aes(x=xi, y=yi)) +
   geom_point()+
   geom_smooth(method='lm',se=FALSE)+
   labs(title = "",x="height", y="working memory capacity")
@@ -230,10 +236,10 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = Psig),
+    geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = Psig),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.9, y = Psig/2, label = "False-Positive"), 
+    geom_label(aes(x = 0.8, y = Psig/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -244,14 +250,6 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
-               label.size = NA, 
-               size = 3,
-               fill = NA)+
-    geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
-               hjust = "center", 
-               vjust = "center", 
-               colour = "black", 
                label.size = NA, 
                size = 3,
                fill = NA)+
@@ -465,21 +463,13 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
     scale_fill_manual(values = Fcolor, 
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
-    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_segment(aes(x = 0.75, y = 1, xend = 0.75, yend = Psig),
+    geom_segment(aes(x = 0.68, y = 1, xend = 0.68, yend = Psig),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")))+
-    geom_label(aes(x = 0.9, y = Psig+((1-Psig)/2), label = "False-Negative"), 
+    geom_label(aes(x = 0.8, y = Psig+((1-Psig)/2), label = "False-Negative"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "black", 
-               label.size = NA, 
-               size = 3,
-               fill = NA)+
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
-               hjust = "center", 
-               vjust = "bottom", 
-               colour = "red", 
                label.size = NA, 
                size = 3,
                fill = NA)+
@@ -501,7 +491,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
 
 ### understanding power
 
-The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100% minus power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation (see `r fig_nums("PP3_50", display="cite")` for an illustration).
+The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval50` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100% minus power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval50`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation (see `r fig_nums("PP3_50", display="cite")` for an illustration).
 
 ``` {r PlotRectangleErrorTypeR50, echo=FALSE, fig.cap=fig_nums("PP3_50")}
 PP3_50
@@ -532,26 +522,18 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
     scale_fill_manual(values = Fcolor, 
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
-    geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_segment(aes(x = 0.75, y = 1, xend = 0.75, yend = Psig28),
+    geom_segment(aes(x = 0.68, y = 1, xend = 0.68, yend = Psig28),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")))+
-    geom_label(aes(x = 0.9, y = Psig28+((1-Psig28)/2), label = "False-Negative"), 
+    geom_label(aes(x = 0.8, y = Psig28+((1-Psig28)/2), label = "False-Negative"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "black", 
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
-               hjust = "center", 
-               vjust = "bottom", 
-               colour = "red", 
-               label.size = NA, 
-               size = 3,
-               fill = NA)+
     geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
                hjust = "center", 
                vjust = "center", 
                colour = "black", 
@@ -653,6 +635,95 @@ PP150_28
 `r fig_nums("PP150_28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in `r fig_nums("PP150_28",display="cite")`, with N= `r PopSize28`), this average correlation (mean R=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
 If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation.
 
+### How can results be too good to be true?
+
+``` {r 2Good2Btrue, echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+Ngood <- 5
+Good2B5 <- data.frame(NSig=rep(NA,Nsim))
+Sigma <- matrix(c(1,Rval50,Rval50,1),2,2)
+for (i in c(1:Nsim)){
+   tmp <- data.frame(p=rep(NA,Ngood),Sig=rep(NA,Ngood))
+  for (j in c(1:Ngood)){
+      D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+      R<-rcorr(D[,1],D[,2])
+      tmp[j,"p"]<-R$P[1,2]
+      tmp[j,"Sig"]<-tmp[j,"p"]<0.05
+  }
+  Good2B5[i,"NSig"]<-sum(tmp$Sig)/Ngood
+}
+Yall<- sum(Good2B5$NSig>0.99)
+Nall = 100*Yall/Nsim
+
+Plot2B <- ggplot(Good2B5, aes(x=NSig)) + 
+    geom_label(aes(x = 1, y=Yall, label = paste(Nall, "%")),
+               hjust = "right", 
+               vjust = "bottom", 
+               colour = "red", 
+               label.size = NA,
+               size = 3,
+               fill = NA)+
+    geom_histogram(binwidth=.05,boundary = 0.05,color="black") +
+    coord_cartesian(xlim = c(0, 1))+
+    theme(legend.position='none')+
+    scale_y_continuous(expand = c(0.1,0)) +
+    labs(title="",x="percentage of significant simulations" , y="Count")
+fig_nums("Plot2B", paste("percentage of significant simulations among", Ngood ,"simulations for R =", Rval50, "and sample size =", PopSize),display=FALSE)
+```
+
+It is clear from `r fig_nums("PP150",display="cite")` and `r fig_nums("PP150_28",display="cite")` that, even in the presence of an effect, some correlations will turn out to be non-significant. Then, it is interesting to look at the probability of getting one or two non-significant results in a series of `r Ngood` experiments. To do so, we simulated such series of `r Ngood` experiments `r Nsim` times and the counted the proportion of significant correlation.
+
+To get a sense of the outcomes of this stimulation, one can use the Shiny App and repeatedly simulate `r Ngood` experiments (setting number of simulations to `r Ngood`, actual correlation to `r Rval50` and Population size to `r PopSize`). In most of the cases, the `r Ngood` experiments do not yield `r Ngood` significant p-values. Actually, this only happens in `r Nall`% of the simulations. 
+
+``` {r Plot2Good2Btrue, echo=FALSE, fig.cap=fig_nums("Plot2B")}
+Plot2B
+```
+
+``` {r 2Good2Btrue28, echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+Good2B528 <- data.frame(NSig=rep(NA,Nsim))
+for (i in c(1:Nsim)){
+   tmp <- data.frame(p=rep(NA,Ngood),Sig=rep(NA,Ngood))
+  for (j in c(1:Ngood)){
+      D <- mvrnorm(n = PopSize28, rep(0, 2), Sigma, empirical = FALSE)
+      R<-rcorr(D[,1],D[,2])
+      tmp[j,"p"]<-R$P[1,2]
+      tmp[j,"Sig"]<-tmp[j,"p"]<0.05
+  }
+  Good2B528[i,"NSig"]<-sum(tmp$Sig)/Ngood
+}
+Yall28 <- sum(Good2B528$NSig>0.99)
+Nall28 = 100*Yall28/Nsim
+```
+
+This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth. Either they have plenty of studies in their file-drawer or they are use questionable practice to always obtain significant p-values. I personally find it depressing to assist to presentations with series of only significant studies with small sample size.
+
+Note that the percentage of series of `r Ngood` simulations with `r Ngood` significant studies increases with power and sample size (N=`r PopSize`: `r Nall`%; N=`r PopSize28`: `r Nall28`%). Yet, even with 80% power, these remain the minority (`r 100-Nall28`% of the series of `r Ngood` simulations contain at least one non-significant p-value).
+
+``` {r 2Good2Btrue28_10, echo=FALSE}
+set.seed(123)# to make sure everybody gets the same results
+Ngood_10<-10
+Good2B528_10 <- data.frame(NSig=rep(NA,Nsim))
+for (i in c(1:Nsim)){
+   tmp <- data.frame(p=rep(NA,Ngood_10),Sig=rep(NA,Ngood_10))
+  for (j in c(1:Ngood_10)){
+      D <- mvrnorm(n = PopSize28, rep(0, 2), Sigma, empirical = FALSE)
+      R<-rcorr(D[,1],D[,2])
+      tmp[j,"p"]<-R$P[1,2]
+      tmp[j,"Sig"]<-tmp[j,"p"]<0.05
+  }
+  Good2B528_10[i,"NSig"]<-sum(tmp$Sig)/Ngood_10
+}
+Yall28_10 <- sum(Good2B528_10$NSig>0.99)
+Nall28_10 = 100*Yall28_10/Nsim
+```
+
+In contrast, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are too good to be true.
+
+## extending this line of thought to the T-test
+
+if we follow the same line of reasoning, one can investigate the distribution of p-values obtained from t-test aiming at comparing two independent groups. That is, instead of correlating the variables obtained from the random sampling, one can simply compare them with a t-test (the covariance matrix should have zeros on his off-diagonal elements). To simulate a difference between the two groups, one needs to change the mean of one of the groups. 
+
 # Learning about sensitivity of correlations from simulated correlations.
 The use of correlation is widespread in science. Yet, correlations are very sensitive to violations of the assumptions. Here, we will show that 1) in the absence of correlation (R=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when R=0); 2) if data are pooled between two different groups (e.g. young adults vs. old adults) and the means for the two groups differ on the two variables.
 
@@ -744,10 +815,10 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = PsigOut),
+    geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigOut),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.9, y = PsigOut/2, label = "False-Positive"), 
+    geom_label(aes(x = 0.8, y = PsigOut/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -826,10 +897,10 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = PsigSpear),
+    geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSpear),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.9, y = PsigSpear/2, label = "False-Positive"), 
+    geom_label(aes(x = 0.8, y = PsigSpear/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -888,17 +959,17 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = PsigRob),
+    geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigRob),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.9, y = PsigRob/2, label = "False-Positive"), 
+    geom_label(aes(x = 0.8, y = PsigRob/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -906,7 +977,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
                size = 3,
                fill = NA)+
     geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
                hjust = "center", 
                vjust = "center", 
                colour = "black", 
@@ -927,6 +998,8 @@ In contrast, the use of winsorized correlation (DEFINE) solves the problem as ro
 ``` {r PlotRobOutlier, echo=FALSE, fig.cap=fig_nums("PP3Rob")}
 PP3Rob
 ```
+
+Mention package where robust corelaions can be found in R
 
 ## influence of subgroups on correlation: simulation and solution
 
@@ -1046,17 +1119,17 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = PsigSub),
+    geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSub),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.9, y = PsigSub/2, label = "False-Positive"), 
+    geom_label(aes(x = 0.8, y = PsigSub/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1064,7 +1137,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
                size = 3,
                fill = NA)+
     geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
                hjust = "center", 
                vjust = "center", 
                colour = "black", 
@@ -1130,17 +1203,17 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = PsigSubSpear),
+    geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSubSpear),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.9, y = PsigSubSpear/2, label = "False-Positive"), 
+    geom_label(aes(x = 0.8, y = PsigSubSpear/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1148,7 +1221,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
                size = 3,
                fill = NA)+
     geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
                hjust = "center", 
                vjust = "center", 
                colour = "black", 
@@ -1201,17 +1274,17 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_segment(aes(x = 0.75, y = 0, xend = 0.75, yend = PsigReg),
+    geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigReg),
      lineend = 'butt', linejoin = 'bevel',
      size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.9, y = PsigReg/2, label = "False-Positive"), 
+    geom_label(aes(x = 0.8, y = PsigReg/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1219,7 +1292,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
                size = 3,
                fill = NA)+
     geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
                hjust = "center", 
                vjust = "center", 
                colour = "black", 
@@ -1265,7 +1338,10 @@ fig_nums("PP1Reg", paste("distribution of significant and non-significant standa
 ```
 
 When correlating parameters across different subgroups, one has to take them into account. This can be done by means of regression. In a simple linear regression $ y = a*x + b $, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized. To z-normalize a variable, one needs to substract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero> To take subgroups into account, one needs to modify the regression question as follow:
-$$ y = a*x + c*G $$ where $G$ is equal to zero for one subgroup and one for the other. This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. 
+$$
+y = a*x + c*G
+$$ 
+where $G$ is equal to zero for one subgroup and one for the other. This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. 
 
 ``` {r PlotProportionReg_subgroups, echo=FALSE, fig.cap=fig_nums("PP3Reg")}
 PP3Reg
@@ -1335,9 +1411,7 @@ Taking subgroups into account does not prevent us from detecting correlations wh
 PP1Reg50
 ```
 
-## extending this line of thought to the T-test
 
-if we follow the same line of reasoning, one can investigate the influence of outlier or subgroups on t-test. The results should be the same if one follows Bishop's blog.
 
 ## it can become more complicated.
 
@@ -1346,7 +1420,21 @@ https://twitter.com/statsepi/status/1115902270888128514
 
 # What have we learned?
 Simulations can be  useful to get insights on statistics.
-1) distribution of p-value under no correlation is flat. Same probability of observing p<0.05 than p>0.95
-2) if there is a correlation, simulations
 
-Simulations can be useful to test potential solution to known problems.
+1) distribution of p-value under no correlation is flat. Same probability of observing p<0.05 than p>0.95
+
+2) Even in the presence of an effect, some p-values can be non-significant.
+
+3) In the presence of an effect, proportion of significant pvalue provide information about power. In the absence of an effect, it represents the number of false positive.
+
+4) publication bias is bad for effect size estimation
+
+5) when power is low, increase in effect size overestimation, increase in CI for estimated R, increase in the effect of outliers
+
+6) It is impossible to never observe non-signifcant p-values. Some scientists present resuls that are too good to be true.
+
+7) Simulations can be useful to test potential solution to known problems. For instance, I did not know whether Spearman correlation was able to handle outliers or not. The simulations clearly showed that it does not.
+
+
+
+
