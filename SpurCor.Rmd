@@ -54,10 +54,10 @@ Refer to lakens on ameliorating the interpretation of p-values
 # Learning about statistics from simulated correlations.
 
 ```{r ParamDef, echo=FALSE}
-PopSize=15
-Nsim=100 # should be 10000
-Rval=0
-Rval50=0.5
+PopSize=15 # population size
+Nsim=100 # number of generated samples; should be 10000
+Rval=0 # correlation coeffecient in the absence of effect
+Rval50=0.5 # correlation coefficient when there is an effect
 ```
 
 Let's imagine the following experiment. Researchers from Klow in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant $i$, they have two observations: $(x_i,y_i)$ where $x_i$ is the height of the participant and $y_i$ is his/her working memory capacity. Then, the researchers decided to test the correlation between these two variables for their population.
@@ -74,14 +74,17 @@ In summary, to generate two independent variables (with zero correlations), we w
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 set.seed(12)# to make sure everybody gets the same results
+# drawing random numbers for the variable X (PopSize sample, mean = 0, SD=1)
 x=mvrnorm(PopSize,0,1,empirical = FALSE)
+# drawing random numbers for the variable X (PopSize sample, mean = 0, SD=1)
 y=mvrnorm(PopSize,0,1,empirical = FALSE)
+# creating a dataframe to display the table
 XY = data.frame(Xi = x,yi = y)
 colnames(XY)<- c("height (xi)","working memory capacity (yi)")
-rownames(XY)<- c("Subj # 1","Subj # 2","Subj # 3","Subj # 4","Subj # 5","Subj # 6","Subj # 7","Subj # 8","Subj # 9","Subj # 10","Subj # 11","Subj # 12","Subj # 13","Subj # 14","Subj # 15")
+rownames(XY)<- c("Subj # 1","Subj # 2","Subj # 3","Subj # 4","Subj # 5","Subj # 6","Subj # 7","Subj # 8","Subj # 9","Subj # 10","Subj # 11","Subj # 12","Subj # 13","Subj # 14","Subj # 15") # computing correlation coefficient
 R<-rcorr(x,y)
-Scatter1 <- data.frame(x,y)
-PP4 <- ggplot(Scatter1, aes(x=x, y=y)) +
+# plotting the data
+PP4 <- ggplot(XY, aes(x=xi, y=yi)) +
   geom_point()+
   geom_smooth(method='lm',se=FALSE)+
   labs(title = "",x="height", y="working memory capacity")
