@@ -17,14 +17,20 @@ report <- function(ListOut){
   Rval <- TXT[[3]]
   CountSig <- sum(dat$Sig)
   Psig <- CountSig/length(dat$Sig)
-  dat$Sig = factor(1-dat$Sig)
-  Fcolor <- c("lightblue")
-
-  Rsig<-0
-  if (sum(dat$Sig==1)<length(dat$Sig)){
+  
+  if (sum(dat$Sig==0)==length(dat$Sig)){
+    Fcolor <- c("lightblue")
+    Rsig<-0
+  } else if (sum(dat$Sig==1)==length(dat$Sig)){
+    Fcolor <- c("orange")
+    Rsig <- Rval
+  }else{
     Rsig <- mean(dat$R[dat$Sig==0])
     Fcolor <- c("orange","lightblue")
   }
+  
+  dat$Sig = factor(1-dat$Sig)
+  
   
   Rall <- mean(dat$R)
   if (Rsig>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
@@ -71,8 +77,9 @@ report <- function(ListOut){
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
   
-  d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
+  
   Fcolor <- c("orange","lightblue")
+  d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
   PP3 <- ggplot() +  
     geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
               color="black") +
@@ -80,7 +87,7 @@ report <- function(ListOut){
                       name="",
                       labels=c("p<=0.05", "p>0.05")) +
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
-    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.05, label = "Type 1 \nError threshold"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -88,7 +95,7 @@ report <- function(ListOut){
                size = 3,
                fill = NA)+
     geom_hline(yintercept=0.8, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError"), 
+    geom_label(aes(x = 0.1, y = 0.8, label = "Type 2 \nError threshold"), 
                hjust = "center", 
                vjust = "center", 
                colour = "black", 
