@@ -1,3 +1,8 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
 <<<<<<< HEAD
 ---
 title: "Simulating correlations for understanding significance testing, its link to estimation of the effect size and how irregularities in the data can yield spurious results"
