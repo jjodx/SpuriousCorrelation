@@ -1,14 +1,17 @@
 ---
-title: "Simulating correlations for understanding significance testing, its link to estimation of the effect size and how irregularities in the data can yield spurious results"
+title: Simulating correlations for understanding significance testing, its link to
+  estimation of the effect size and how irregularities in the data can yield spurious
+  results
 author: "Jean-Jacques Orban de Xivry"
 date: "April 28, 2019"
 output:
   html_document:
-    fig_caption: true
+    fig_caption: yes
   pdf_document:
-    fig_caption: true
+    fig_caption: yes
   word_document:
-    fig_caption: true
+    fig_caption: yes
+bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -29,6 +32,7 @@ fig_nums <- captioner()
 9. make assignments for each section
 12. does Bayes Factor solves it? (solve the influence of outliers and subgroups on significance of correlation)
 
+
 Refer to Bishop blog:
 
 http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html
@@ -47,7 +51,7 @@ Alex Reinhart: statistics done wrong
 
 # Introduction
 
-Statistical significance is at the heart of a philosophical debate (https://amstat.tandfonline.com/doi/full/10.1080/00031305.2016.1154108?src=recsys). Should we abandon the use of p-values, should we use a more severe significance threshold or should we use an adapted one? Is the Bayes Factor better suited for science than the p-values. These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used. Furthermore, many people do not have a lot of insights how p-values behave in different circumstances. Here, we use our ability to randomly generate correlated or uncorrelated variables as a tool to get insights into p-values linked to correlations and many problems that have been discussed in science. This part adresses the significance problem.
+Statistical significance is at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values, should we use a more severe significance threshold or should we use an adapted one? Is the Bayes Factor better suited for science than the p-values. These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used. Furthermore, many people do not have a lot of insights how p-values behave in different circumstances. Here, we use our ability to randomly generate correlated or uncorrelated variables as a tool to get insights into p-values linked to correlations and many problems that have been discussed in science. This part adresses the significance problem linked to p-values.
 
 But p-values on their own have very little value if they are not coupled to the effect size of an effect. Indeed, while we sommetimes want to know whether a relationship exist between two variables (e.g. air pollution and respiratory disease), we often also want to know the importance of this link. Does hair pollution explains 0.1 or 25% of respiratory disease incidence. The ability to estimate the importance of such relationship is referred to as the estimation problem. Estimation is important not for distinguishing between two theories but to assess the magnitude of the relationship (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3444174/). The estimation problem is made complicated by publication bias (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC27401/). That is, people do not cherish not significant effect and rarely published them while significant effects are published very easily. We will thus use simulation to understand how publication bias is a threat for the estimation of the magnitude of the effect size.
 
@@ -61,7 +65,7 @@ this is a test about how bad people are at understanding p-values and how p-hack
 
 Correlations were chosen because they are very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables. While the correlation coefficient has been deemed to be robust against violations of the assumptions, we now know that it is at least extremely sensitive to outliers. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
 
-Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values, to get insights into the estimation problem and to find the best technique to account for irregularities in the data.
+Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values (https://amstat.tandfonline.com/doi/abs/10.1080/00031305.2015.1081619#.XLcULeyoA0N, https://www.sciencedirect.com/science/article/pii/S1477388018300148, ), to get insights into the estimation problem and to find the best technique to account for irregularities in the data.
 
 Refer to lakens on ameliorating the interpretation of p-values
 
