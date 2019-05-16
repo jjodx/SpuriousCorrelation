@@ -62,7 +62,7 @@ A: p=0.024, p=0.034 and p=0.031
 B: p=0.25, p=0.032 and p=0.0001
 Note that tackling this question will tell what the expected patterns of p-values are in the presence of an effect. 
 
-The simulations and corresponding p-values reported in this paper were based on the correlation between two variables.n Correlations were chosen because they are very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables [@leerodgers1988; @taylor1990]. While the correlation coefficient has been deemed to be robust against violations of the assumptions [@havlicek1976], we now know that it is at least extremely sensitive to outliers [@abdullah1990; @pernet2013]. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
+The simulations and corresponding p-values reported in this paper were based on the correlation between two variables.n Correlations were chosen because they are very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables [@leerodgers1988; @taylor1990]. While the correlation coefficient has been deemed to be robust against violations of the assumptions [@havlicek1976], we now know that it is at least extremely sensitive to outliers [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
 
 Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values [@ohara2019; @tintle2015], to get insights into the estimation problem and to find the best technique to account for irregularities in the data.
 
@@ -229,8 +229,7 @@ PP2 <- ggplot(res, aes(x=p, fill=Sig)) +
 fig_nums("PP2", "Distribution of p-values when no effect is present. Each simulated p-value corresponds to the correlation between samples taken from two uncorrelated variables",display=FALSE)
 ```
 
-Simulating such correlation repeatedly can allow one to look at the distribution of p-values when no correlation is present in the underlying variables. As described in many other papers (Casella,G. and Berger,R. (1990) Statistical Inference. Wadsworth &
-Brooks/Cole, Pacific Grove, CA.), this distribution if completely flat and 5% of the p-values are below the typical 5% significance threshold. 
+Simulating such correlation repeatedly can allow one to look at the distribution of p-values when no correlation is present in the underlying variables. As described in many other papers [@benjamini1995controlling], this distribution if completely flat and 5% of the p-values are below the typical 5% significance threshold. 
 
 ```{r PlotDistribPvalUnderR0, echo=FALSE, fig.cap=fig_nums("PP2")} 
 PP2
@@ -279,6 +278,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
 PP3_0
 ```
 In the absence of correlation between the underlying variables, the significant p-values are referred to as false-positive. We expect 5% of such correlations for a type I error threshold (aka the infamous significance threshold) of 0.05 (red horizontal dashed line in `r fig_nums("PP3_0", display = "cite")`).
+
 ### understanding the influence of sample size (and power) on the magnitude of the false-positive correlations
 
 ``` {r DistriRunderR0, echo=FALSE}
@@ -318,7 +318,7 @@ PP1
 
 This if often referred to as the significance fallalcy (REF). If it so big and significant, it can only be true. "Such a large correlation can only be true" would say an inexperienced scientist. It is therefore important to note that, when correlating two variables and looking at a high and significant correlation, it is impossible to say whether this is a true effect or a false-positive corelation. Replication of this correlation in an independent and hopefully larger sample can only increase the probability that this correlation is true if it is again significant. In the other case, it increases the probability that the first correlation was a false-positive one. Yet, even two correlations are insufficient to draw a firm conclusion about the veracity of the effect but they at least give an better idea of the investigated correlation.
 
-In other words high-correlations on a limited number of datapoints should require skepticism for any scientists. I am well aware that it is not always easy to do so (see the beautiful correlation on N=6 in Orban de Xivry et al. 2009).
+In other words high-correlations on a limited number of datapoints should require skepticism for any scientists. I am well aware that it is not always easy to do so (see the beautiful correlation on N=6 in [@orbandexivry2009a]).
 
 ``` {r DistriRN75, echo=FALSE}
 PopSize75 = 75 #number os elements in each sample
@@ -647,7 +647,7 @@ PP150_28
 ### understanding that publication bias inflates effect size
 
 `r fig_nums("PP150_28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in `r fig_nums("PP150_28",display="cite")`, with N= `r PopSize28`), this average correlation (mean R=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
-If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation.
+If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation. With low power, significant effect size are always inflated .
 
 ### How can results be too good to be true?
 
@@ -739,7 +739,7 @@ In contrast, the probability of observing only significant p-values decreases wi
 if we follow the same line of reasoning, one can investigate the distribution of p-values obtained from t-test aiming at comparing two independent groups. That is, instead of correlating the variables obtained from the random sampling, one can simply compare them with a t-test (the covariance matrix should have zeros on his off-diagonal elements). To simulate a difference between the two groups, one needs to change the mean of one of the groups. 
 
 # Learning about sensitivity of correlations from simulated correlations.
-The use of correlation is widespread in science. Yet, correlations are very sensitive to violations of the assumptions. Here, we will show that 1) in the absence of correlation (R=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when R=0); 2) if data are pooled between two different groups (e.g. young adults vs. old adults) and the means for the two groups differ on the two variables.
+The use of correlation is widespread in science. Yet, correlations are very sensitive to violations of the assumptions. Here, we will show that 1) in the absence of correlation (R=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when R=0) [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]; 2) if data are pooled between two different groups (e.g. young adults vs. old adults) and the means for the two groups differ on the two variables.
 
 ## the outlier problem: simulation and solution
 
@@ -767,7 +767,7 @@ Outlier4 <- ggplot(Scatter1) +
 fig_nums("Outlier4", paste("example of a correlation biased by an outlier (in red) when the simulated R is ", Rval, ", the sample size is", PopSize, " and the outlier is", SDdist, "standard deviation away from the mean"),display=FALSE)
 ```
 
-To generate an outlier, we will first generate the x and y parameteres for the 'r PopSize' individuals. We will then compute their mean and standard deviation, the data from the last individual will then be replaced by a point 'r SDdist' standard deviation away from the mean (mean + 3*SD). This will be done for both x and y variables for this individual. By doing so, one obtains the following grahics.
+To generate an outlier, we will first generate the x and y parameteres for the `r PopSize` individuals. We will then compute their mean and standard deviation, the data from the last individual will then be replaced by a point `r SDdist` standard deviation away from the mean (mean + 3*SD). This will be done for both x and y variables for this individual. By doing so, one obtains the following grahics.
 
 ``` {r PlotExampleOutlier, echo=FALSE, fig.cap=fig_nums("Outlier4")}
 Outlier4
@@ -857,7 +857,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
   fig_nums("PP3Out", paste("proportion of significant and non-significant p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values. In addition, only 5% of the simulated correlations should be significant as we have also detailed above (Fig???). The two graphs below illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=0)` % significant p-values!
+We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values. In addition, only 5% of the simulated correlations should be significant as we have also detailed above `r fig_nums("PP2", display = "cite")`. The two graphs below illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=0)` % significant p-values!
 
 ``` {r PlotDistriP_outlier, echo=FALSE, fig.cap=fig_nums("PP2Out")}
 PP2Out
@@ -1046,7 +1046,7 @@ SubG4 <- ggplot(Scatter1) +
   fig_nums("SubG4",paste("Example of correlation biased by differences between subgroups", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-To generate subgroups, we first generate the x and y parameteres for the 'r PopSize' individuals. We will then split the population into two subgroups and add a value of `r SDdistSub` to each the values of both varialbes for one of the two subgroups. By doing so, one obtains the following grahics.
+To generate subgroups, we first generate the x and y parameteres for the `r PopSize` individuals. We will then split the population into two subgroups and add a value of `r SDdistSub` to each the values of both varialbes for one of the two subgroups. By doing so, one obtains the following grahics.
 
 ``` {r PlotExampleSubgroup, echo=FALSE, fig.cap=fig_nums("SubG4")}
 SubG4
@@ -1435,19 +1435,19 @@ https://twitter.com/statsepi/status/1115902270888128514
 # What have we learned?
 Simulations can be  useful to get insights on statistics.
 
-1) distribution of p-value under no correlation is flat. Same probability of observing p<0.05 than p>0.95
+1) distribution of p-value under no correlation is flat . Same probability of observing p<0.05 than p>0.95
 
-2) Even in the presence of an effect, some p-values can be non-significant.
+2) Even in the presence of an effect, some p-values can be non-significant [@lakens2017a]. 
 
-3) In the presence of an effect, proportion of significant pvalue provide information about power. In the absence of an effect, it represents the number of false positive.
+3) In the presence of an effect, proportion of significant p-values provide information about power. In the absence of an effect, it represents the number of false positives.
 
-4) publication bias is bad for effect size estimation
+4) publication bias is bad for effect size estimation [@nissen2016; @sutton2000].
 
-5) when power is low, increase in effect size overestimation, increase in CI for estimated R, increase in the effect of outliers
+5) when power is low, increase in effect size overestimation, increase in CI for estimated R, increase in the effect of outliers.
 
-6) It is impossible to never observe non-signifcant p-values. Some scientists present resuls that are too good to be true.
+6) It is impossible to never observe non-signifcant p-values. Some scientists present resuls that are too good to be true. Anybody should be warry of scientists who only publish significant results with small samples [@schimmack2012].
 
-7) Simulations can be useful to test potential solution to known problems. For instance, I did not know whether Spearman correlation was able to handle outliers or not. The simulations clearly showed that it does not.
+7) Simulations can be useful to test potential solution to encountered problems. For instance, I did not know whether Spearman correlation was able to handle outliers or not. The simulations clearly showed that it does not.
 
 
 # References
