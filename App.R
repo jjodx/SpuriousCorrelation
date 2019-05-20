@@ -35,7 +35,8 @@ ui <- fluidPage(
                 min = 2, max = 1000, value = 20),
     sliderInput("SDdist", 
                 label = "distance from mean: outlier/Population",
-                min = 0, max = 5, value = 3)
+                min = 0, max = 5, value = 3),
+    actionButton("action", label = "Generate again")
   ),  
   mainPanel(plotOutput("map"))
   )

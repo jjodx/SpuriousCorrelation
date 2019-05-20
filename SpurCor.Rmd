@@ -16,12 +16,14 @@ bibliography: StatLibrary.bib
 ---
 
 ```{r setup, include=FALSE}
+# options for producing the document
 knitr::opts_chunk$set(echo = TRUE, eval.after = "fig.cap")
+# different R packages that are used in this document and the function use from each of them
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 library(ggplot2)
 library(WRS2) # for wincor and pbcor
-library(captioner)
+library(captioner) # for captioner
 library(knitr) # kable function to make tables
 fig_nums <- captioner()
 ```
@@ -62,23 +64,24 @@ A: p=0.024, p=0.034 and p=0.031
 B: p=0.25, p=0.032 and p=0.0001
 Note that tackling this question will tell what the expected patterns of p-values are in the presence of an effect. 
 
-The simulations and corresponding p-values reported in this paper were based on the correlation between two variables.n Correlations were chosen because they are very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables [@leerodgers1988; @taylor1990]. While the correlation coefficient has been deemed to be robust against violations of the assumptions [@havlicek1976], we now know that it is at least extremely sensitive to outliers [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
+The simulations and corresponding p-values reported in this paper were based on the correlation between two variables. Correlation was chosen as an example of statistical test because it is very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables [@leerodgers1988; @taylor1990]. While the correlation coefficient has been deemed to be robust against violations of the assumptions [@havlicek1976], we now know that it is at least extremely sensitive to outliers [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
 
-Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values [@ohara2019; @tintle2015], to get insights into the estimation problem and to find the best technique to account for irregularities in the data.
+Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values [@ohara2019; @tintle2015], to get insights into the estimation problem [@pernet2013] and to find the best technique to account for irregularities in the data [@rousselet2012a].
 
 
 # Learning about statistics from simulated correlations.
 
 ```{r ParamDef, echo=FALSE}
-PopSize=15
-Nsim=100 # should be 10000
-Rval=0
-Rval50=0.5
+# defining default parameters
+PopSize=15 # size of the population/sample
+Nsim=100 # number of simulated populations/samples. 100 to go fast / should be 10000
+Rval=0 # for simulating when there is no correlations between the measured parameters
+Rval50=0.5 # for generating correlated measured parameters within a population
 ```
 
 Let's imagine the following experiment. Researchers from Klow in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant $i$, they have two observations: $(x_i,y_i)$ where $x_i$ is the height of the participant and $y_i$ is his/her working memory capacity. Then, the researchers decided to test the correlation between these two variables for their population.
 There is no reason whatsoever to expect a correlation between height and working memory capacity. This should be zero. 
-We can simulate this experiment numerically by generating `r PopSize` random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated height of each participant and `r PopSize` different random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated working memory capacity of each participant. A mean of 0 and a standard deviation of 1 were chosen for simplicity but all the arguments below hold if ones picks another mean and/or another standard deviation. By doing this, we have generated `r PopSize` pairs of height and working memory capacity. To follow the idea of our Syldavian researchers, we can then compute the correlation between height and working memory capacity of our randomly generated population.
+We can simulate this experiment numerically by generating `r PopSize` random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated height of each participant and `r PopSize` different random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated working memory capacity of each participant. A mean of 0 and a standard deviation of 1 were chosen for simplicity but all the arguments below hold if ones picks another mean and/or another standard deviation. By doing this, we have generated `r PopSize` pairs of height and working memory capacity (the measured parameters). To follow the idea of our Syldavian researchers, we can then compute the correlation between height and working memory capacity of our randomly generated parameters across the population of `r PopSize` individuals.
 
 ## simulating a single correlation between two randomly generated samples
 
@@ -104,22 +107,22 @@ PP4 <- ggplot(Scatter1, aes(x=x, y=y)) +
 fig_nums("PP4", "Absence of correlation from two randomly generated samples from two uncorrelated variables",display=FALSE)
 
 ```
-We then obtain the following matrices:
+ By doing so, we obtain the following matrices:
 ```{r DisplayMatrixR0, echo = FALSE, results = 'asis'}
-kable(XY, caption = "randomly generated value for the individuals of the population")
+kable(XY, caption = "randomly generated parameters for the individuals of the population")
 ```
 
-These values are unitless. Some of them are positive other negative values.Now that we have generated data for height and working memory capacity for each individual, we can test whether the correlation between these two parameters. We wil first use the Pearson's correlation, which is used in most scientific studies.
-Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated parameters have a correlation coefficient R= `r format(R$r[1,2], digits = 2)` (p-value = `r format(R$P[1,2], digits = 2)`). Interstingly, while the two variables should be independent (height and working memory were generated randomly and independently), their correlation coefficient is not exactly zero. Yet, it is low (and non-significant), which means that we cannot conclude from this data that the variables height and working memory capacity are related (and we cannot conclude that these are not correlated either).
+These values are unitless. Some of them are positive other negative values.Now that we have generated data for height and working memory capacity for each individual, we can test the correlation between these two parameters. We wil first use the Pearson's correlation, which is used in most scientific studies.
+Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated parameters have a correlation coefficient R= `r format(R$r[1,2], digits = 2)` (p-value = `r format(R$P[1,2], digits = 2)`). Interstingly, while the two variables should be independent (height and working memory were generated randomly and independently), their correlation coefficient is not exactly zero. Yet, it is low (and non-significant), which means that we cannot conclude from this data that the variables height and working memory capacity are related in this population (and we cannot conclude that these are not correlated either).
 ````{r plotR0, echo=FALSE, fig.cap= fig_nums("PP4")} 
 PP4
 ```
 
-Now, this is the data from a single city. Let's know simulate what would happen if the same correlation was computed for `r Nsim` different towns with more than 1000 inhabitants. In this case, we should repeat the process `r Nsim` times in order to know whether the result obtained for `r fig_nums("PP4", display = "cite")` is a special case or not. That is, for every simulated city (N=`r Nsim`), we will generate random numbers for the height and for the working memory capacity. We will then obtain the correlation coefficient and p-value for these parameters for every one of the `r Nsim` towns.
+Now, this is the data from a single city. Let's now simulate what would happen if the same correlation was computed for `r Nsim` different towns with enough inhabitants. In this case, we should repeat the process `r Nsim` times in order to know whether the result obtained for `r fig_nums("PP4", display = "cite")` is a special case or not. That is, for every simulated city (N=`r Nsim`), we will generate random numbers for the two parameters (height and working memory capacity). We will then obtain the size (correlation coefficient) and significance (p-value) of the correlation between these parameters for every one of the `r Nsim` towns.
 
 ## simulating multiple correlation between two randomly generated samples
 
-Being able to perform these simulations in any programming language has certainly a large added value as we will show below. Therefore, we encourage the interested reader to use the code below to perform those simulations in R. For the readers who do not have the time or the willingness to do so, they can use the web application developed for this paper (See ShinyApp section below).
+Being able to perform these simulations in any programming language has certainly a large added value as we will show below. Therefore, we encourage the interested reader to use the code below to perform these simulations in R. For the readers who do not have the time or the willingness to do so, they can use the web application developed for this paper (See ShinyApp section below).
 
 ### doing that in R
 
