@@ -120,18 +120,18 @@ PP4
 
 Now, this is the data from a single city. Let's now simulate what would happen if the same correlation was computed for `r Nsim` different towns with enough inhabitants. In this case, we should repeat the process `r Nsim` times in order to know whether the result obtained for `r fig_nums("PP4", display = "cite")` is a special case or not. That is, for every simulated city (N=`r Nsim`), we will generate random numbers for the two parameters (height and working memory capacity). We will then obtain the size (correlation coefficient) and significance (p-value) of the correlation between these parameters for every one of the `r Nsim` towns.
 
-## simulating multiple correlation between two randomly generated samples
+## simulating multiple correlation between two randomly generated parameters
 
 Being able to perform these simulations in any programming language has certainly a large added value as we will show below. Therefore, we encourage the interested reader to use the code below to perform these simulations in R. For the readers who do not have the time or the willingness to do so, they can use the web application developed for this paper (See ShinyApp section below).
 
 ### doing that in R
 
-Simmulating randomly generated samples can be done in $R$ with the $mvrnorm$ function from the $MASS$ package. To draw `r PopSize` samples from a normal distribution, we can do
+Simmulating randomly generated parameters for a given number of participants can be done in $R$ with the $mvrnorm$ function from the $MASS$ package. To draw `r PopSize` samples from a normal distribution, we can do
 ``` {r eval=FALSE}
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 set.seed(12)# to make sure everybody gets the same results
-# number of individuals in the randomly generated sample
+# number of individuals in the population/sample
 PopSize = 15
 # 15 randomly generated number representing the height of the 15 individuals in the population
 x=mvrnorm(PopSize,0,1,empirical = FALSE)
@@ -157,15 +157,15 @@ where the off-diagonal element of the covariance matrix indicate the theoretical
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
 set.seed(123)# to make sure everybody gets the same results
-Nsim=1000 # number of simulations
+Nsim=10000 # number of simulations
 PopSize = 15 #number os elements in each sample
 Sigma <- matrix(c(1,0,0,1),2,2)# covariance matrix
 res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim)) # pre-allocating space for the dataframe
 for (i in c(1:Nsim)){
   # drawing 15 elements for each random variable (x and y) with a covariance matrix equal to Sigma
-  # the first column of D corresponds to the samples of the x variable and the second to the samples of the y variable
+  # the first column of D corresponds to the samples of the x parameter (e.g. the height) and the second to the samples of the y parameter (e.g. working memory capacity)
   D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE) 
-  R<-rcorr(D[,1],D[,2]) # correlation between the samples of x and y 
+  R<-rcorr(D[,1],D[,2]) # correlation between the randomly generated x and y 
   res[i,"R"] <- R$r[1,2] # storing the correlation value for future use
   res[i,"p"]<-R$P[1,2]# storing the p-value for future use
   res[i,"Sig"]<-res[i,"p"]<0.05 # tag p-values smaller than the type II error threshold (here 0.05)
@@ -193,7 +193,7 @@ For the readers that are not (yet) familiar with the R language, one can simply 
 3. call the Shiny library (run the following from Rstudio console: `library(shiny)`)
 4. run the following from an R console: runGitHub("SpuriousCorrelation","jjodx")
 
-and you can reproduce all the manipulations explained below thanks to the program that is now open (ADD PRINTSCREEN OF PROGRAM).
+and you can reproduce all the manipulations explained below thanks to the program that is now open ![App screen](./ShinyApp.png)
 
 ## What is the expected p-value distribution if there are no correlations
 
@@ -232,16 +232,16 @@ PP2 <- ggplot(res, aes(x=p, fill=Sig)) +
 fig_nums("PP2", "Distribution of p-values when no effect is present. Each simulated p-value corresponds to the correlation between samples taken from two uncorrelated variables",display=FALSE)
 ```
 
-Simulating such correlation repeatedly can allow one to look at the distribution of p-values when no correlation is present in the underlying variables. As described in many other papers [@benjamini1995controlling], this distribution if completely flat and 5% of the p-values are below the typical 5% significance threshold. 
+Simulating such correlation repeatedly can allow one to look at the distribution of p-values when no correlation is present in the underlying variables. As described in many other papers [@benjamini1995controlling], this distribution is completely flat and 5% of the p-values are below the typical 5% significance threshold. 
 
 ```{r PlotDistribPvalUnderR0, echo=FALSE, fig.cap=fig_nums("PP2")} 
 PP2
 ```
 
-Interestingly, even in the absence of correlation between x and y, there is a subset of correlations associated with a p-value under the significance threshold (type II error). Those are highlighted in orange in `r fig_nums("PP2", display = "cite")` and are called false-positives. That is, these correlations are significant despite the fact that the variables x and y (from which only a few samples was taken) are, by design, not correlated. Given that the distribution of p-values is uniform and that p-values fall in the interval [0,1], there will always be 5% of the p-values under the threshold of 0.05, independently of the number of samples for the two variables.
+Interestingly, even in the absence of correlation between the parameters x and y, there is a subset of correlations associated with a p-value under the significance threshold (type II error). Those are highlighted in orange in `r fig_nums("PP2", display = "cite")` and are called false-positives. That is, these correlations are significant despite the fact that the underlying variables x and y (that where measured on `r PopSize` participants) are, by design, not correlated. Given that the distribution of p-values is uniform and that p-values fall in the interval [0,1], there will always be 5% of the p-values under the threshold of 0.05, independently of the number of samples for the two variables.
 
-assignment:
-check that increasing the sample size (value of PopSize in the code) does not influence the distribution of p-values when the two variables are unccorelated.
+__*Assignment:*__
+*check that increasing the population size (value of PopSize in the code) does not influence the distribution of p-values when the two variables are unccorelated.*
 
 ``` {r RectangleErrorTypeR0, echo=FALSE}
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
@@ -313,13 +313,13 @@ PP1 <- ggplot(res, aes(x=R, fill=Sig)) +
     labs(title="",x="correlation coefficient" , y="Count")
 fig_nums("PP1", paste("distribution of the correlations coefficient when R=", Rval, "and N=", PopSize),display=FALSE)
 ```
-The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size. In `r fig_nums("PP1", display = "cite")`, one can see that the simulated correlations with `r PopSize` samples span a range between `r format(min(res$R),digits=2)` and `r format(max(res$R),digits=2)`. However, only larger positive correlations (in orange on `r fig_nums("PP1", display = "cite")`) are significant. That is, with small sample size (here `r PopSize` observations for each variable), the false-positive correlations are large (absolute value > `r format(min(abs(res$R[res$Sig==0])), digits=2)`).
+The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size. In `r fig_nums("PP1", display = "cite")`, one can see that the simulated correlations with `r PopSize` samples span a range between `r format(min(res$R),digits=2)` and `r format(max(res$R),digits=2)`. However, only extreme correlations (in orange on `r fig_nums("PP1", display = "cite")`) are significant. That is, with small sample size (here `r PopSize` observations for each variable), the false-positive correlations are large (absolute value > `r format(min(abs(res$R[res$Sig==0])), digits=2)`).
 
 ```{r PlotDistriRunderR0, echo=FALSE, fig.cap=fig_nums("PP1")} 
 PP1
 ```
 
-This if often referred to as the significance fallalcy (REF). If it so big and significant, it can only be true. "Such a large correlation can only be true" would say an inexperienced scientist. It is therefore important to note that, when correlating two variables and looking at a high and significant correlation, it is impossible to say whether this is a true effect or a false-positive corelation. Replication of this correlation in an independent and hopefully larger sample can only increase the probability that this correlation is true if it is again significant. In the other case, it increases the probability that the first correlation was a false-positive one. Yet, even two correlations are insufficient to draw a firm conclusion about the veracity of the effect but they at least give an better idea of the investigated correlation.
+This if often referred to as the significance fallalcy (__*REF*__). If it so big and significant, it can only be true. "Such a large correlation can only be true" would say an inexperienced scientist. It is therefore important to note that, when correlating two variables and looking at a high and significant correlation, it is impossible to say whether this is a true effect or a false-positive corelation. Replication of this correlation in an independent and hopefully larger sample can only increase the probability that this correlation is true if it is again significant. In the other case, it increases the probability that the first correlation was a false-positive one. Yet, even two correlations are insufficient to draw a firm conclusion about the veracity of the effect but they at least give an better idea of the investigated correlation.
 
 In other words high-correlations on a limited number of datapoints should require skepticism for any scientists. I am well aware that it is not always easy to do so (see the beautiful correlation on N=6 in [@orbandexivry2009a]).
 
@@ -372,9 +372,10 @@ I have insisted on the fact that the high false-positive correlations described 
 PP175
 ```
 
-
-
 The significance fallacy has important consequences for the publishability of findings. If two researchers are (unknowingly) reporting a false-positive correlation with N=`r PopSize` and R=0.7 for researcher A and with N=`r PopSize75` and R=0.4 for researcher B, which one will more easily publish in a high-impact journal (whatever that means...)? Therefore, any scientist should be warry on exploratory correlations with low N.
+
+__*Assignment:*__
+*How big needs the population size to be to have all false positive correlations with a smaller than medium effect size (r=0.3)?*
 
 ### understanding the multiple comparison problem.
 
@@ -386,9 +387,12 @@ DifSig <- SigIndex - c(1,SigIndex[1:length(SigIndex)-1])+1
 
 ```
 
-These simulations also show that if we keep simulating random variables, we are assured of getting at least one significant correlation. With `r Nsim` simulations, there is 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(mean(DifSig),digits=0)` trials. That is, if one keeps testing the significance of correlation between different variables, one is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon.
+These simulations also show that if we keep generating random parameters, we are assured of getting at least one significant correlation. With `r Nsim` simulations, there is 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(mean(DifSig),digits=0)` trials. That is, if one keeps testing the significance of correlation between different parameters, (s)he is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon [@bennett2011].
 
-This illustrates that if someone keeps trying to test correlation between many possible variables, the probability of getting a significant correlation even if there should be no correlation.
+This illustrates that if someone keeps trying to test correlation between many possible variables, the probability of getting a significant correlation is 100% even if there should be no correlation.
+
+__*Assignment:*__
+*Simulate repeatedly a single correlation. How long did you have to wait to get at least one significant correlation? Now, simulate 50 different correlations. How often are none of the correlations significant? This demonstrates that it is not difficult to get a significant correlation even if the data is completely random...*
 
 ```{r SetR50, echo=FALSE}
 Rval50 = 0.5
@@ -398,7 +402,7 @@ Rval50 = 0.5
 
 It is also interesting to simulate cases where the correlation is not zero. While simulating correlations with R=0 thaught us about false-positive correlations (type I error), the importance of sample size and the multiple comparison problem, simulating corelation with $R\ne0$ can teach us about power (and type II error), the precision of estimation and the consequences of publishing only significant studies.
 
-To simulate two variables with a given correlation, one can  use the $mvnorm$ function but this time with a covariance matrix exhibiting the value for the simulated correlation on the off-diagonal elements. For instance, if we want to simulate two variables with a correlation of R=`r Rval50`, then the covariance matrix is:
+To simulate two parameters with a given correlation, one can use the $mvnorm$ function but this time with a covariance matrix exhibiting the value of the simulated correlation on the off-diagonal elements. For instance, if we want to simulate two variables with a correlation of R=`r Rval50`, then the covariance matrix is:
 $$
 Sigma = \begin{pmatrix}
 1 & `r Rval50`\\
@@ -430,16 +434,16 @@ rownames(XY)<- c("Subj # 1","Subj # 2","Subj # 3","Subj # 4","Subj # 5","Subj # 
 kable(XY, caption = "randomly generated value for the individuals of the population")
 ```
 
-The generated values can be seen in the table below. One can see that individuals that appear to have a larger height also have a larger weight. This is even more apparent on  `r fig_nums("PP450", display = "cite")` where the relationship between height and weight is visible.
+The generated values for the two parameters can be seen in the table below. One can see that individuals that appear to have a larger height also have a larger weight. This is even more apparent on  `r fig_nums("PP450", display = "cite")` where the relationship between height and weight is clearly visible.
 
 ```{r plotCorrelR50, echo=FALSE, fig.cap=fig_nums("PP450")}
 PP450
 ```
-Together, these two variables are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits=3)`). That is, the correlation between the two variables is not exactly equal to the simulated value (R= `r Rval50`) We will see later how we can recover the actual simulated correlation.This is reminiscent of when we generated uncorrelated samples. Even though there was no correlation in the underlying variables (height and working memory capacity), the correlations that we found were not exactly zero but around zero.
+Together, these two parameters measured in `r PopSize` individuals are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (p-value = `r format(R$P[1,2], digits=3)`). That is, the correlation between the two parameters (height and weight) is not exactly equal to the simulated value (R= `r Rval50`). We will see later how we can recover the actual simulated correlation. This is reminiscent of when we generated uncorrelated parameters (`r fig_nums("PP4", display = "cite")`). Even though there was no correlation in the underlying variables (height and working memory capacity), the correlations that we found were not exactly zero but approximately zero.
 
 ## What is the expected p-value distribution if there is a correlation
 
-Now, we will repeat this process a number of times in order to obtain the distribution of the p-values when there is a correlation R=`r Rval50`as we did earlier when no correlation was present. The distribution of p-values was then completely flat (see `r fig_nums("PP2", display = "cite")`). In contrast, When there is an underlying correlation between the two variables, the distribution of p-values becomes skewed with more p-values under 0.05.
+Now, we will repeat this process a number of times in order to obtain the distribution of p-values when there is a correlation R=`r Rval50`as we did earlier when no correlation was present and the distribution of p-values was completely flat (`r fig_nums("PP2", display = "cite")`). In contrast, When there is an underlying correlation between the two variables, the distribution of p-values becomes skewed with more p-values under 0.05.
 ``` {r SimulationR50, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
@@ -470,7 +474,10 @@ fig_nums("PP2_50", paste("distribution of p-values when the simulated R is ", Rv
 PP2_50
 ```
 
-`r fig_nums("PP2_50",display="cite")` also shows that non-significant p-values cannot be considered as a proof that there are no correlation between the variables x and y. All the non-significant correlations on `r fig_nums("PP2_50",display="cite")` are false-negative. That is, these correlations are are not significant even though the sampled variables x and y are correlated. False-negative correlations correspond to type II error, which is linked to the power of an experiment.
+`r fig_nums("PP2_50",display="cite")` also shows that non-significant p-values cannot be considered as a proof that there are no correlation between the variables x and y. Indeed, despite the fact that the underlying variables are correlated (R = `r Rval50`), a portion of the simulated correlations are not significant. The non-significant correlations on `r fig_nums("PP2_50",display="cite")` are false-negative. That is, these correlations are are not significant even though the underlying variables x and y are correlated. False-negative correlations correspond to type II error, which is linked to the power of an experiment.
+
+__*Assignment:*__
+*Explore the shape of the p-value distribution for correlation of different sizes and for different population size*
 
 ``` {r RectangleErrorTypeR50, echo=FALSE}
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
@@ -508,7 +515,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
 
 ### understanding power
 
-The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval50` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100% minus power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% from them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval50`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation (see `r fig_nums("PP3_50", display="cite")` for an illustration).
+The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval50` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100% minus power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% of them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval50`, we have `r format(100*Psig, digits = 0)`% of detecting a significant correlation (see `r fig_nums("PP3_50", display="cite")` for an illustration).
 
 ``` {r PlotRectangleErrorTypeR50, echo=FALSE, fig.cap=fig_nums("PP3_50")}
 PP3_50
@@ -573,7 +580,8 @@ PP28
 
 This manipulations demonstrate how simulations can yield insights about the required sample size for detecting a correlation of a given value (Here, R=`r Rval50`). The problem with power is that we rarely now in advance how big the effect size (e.g. the strengthh the correlation) will be.
 
-Assignment: test the influence of effect size on power
+__*Assignment:*__
+*How big needs the population size to be to reach a power of 80% for R=0.3 or R=0.1, a power of 90% for R=0.5?*
 
 ### effect of sample size on the accuracy of correlation estimation.
 
@@ -650,7 +658,10 @@ PP150_28
 ### understanding that publication bias inflates effect size
 
 `r fig_nums("PP150_28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in `r fig_nums("PP150_28",display="cite")`, with N= `r PopSize28`), this average correlation (mean R=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
-If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation. With low power, significant effect size are always inflated .
+If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation. With low power, significant effect size are even more inflated.
+
+__*Assignment:*__
+*Explore the effect of population size and effect size (i.e. the correlation) on publication bias.*
 
 ### How can results be too good to be true?
 
@@ -690,7 +701,10 @@ fig_nums("Plot2B", paste("percentage of significant simulations among", Ngood ,"
 
 It is clear from `r fig_nums("PP150",display="cite")` and `r fig_nums("PP150_28",display="cite")` that, even in the presence of an effect, some correlations will turn out to be non-significant. Then, it is interesting to look at the probability of getting one or two non-significant results in a series of `r Ngood` experiments. To do so, we simulated such series of `r Ngood` experiments `r Nsim` times and the counted the proportion of significant correlation.
 
-To get a sense of the outcomes of this stimulation, one can use the Shiny App and repeatedly simulate `r Ngood` experiments (setting number of simulations to `r Ngood`, actual correlation to `r Rval50` and Population size to `r PopSize`). In most of the cases, the `r Ngood` experiments do not yield `r Ngood` significant p-values. Actually, this only happens in `r Nall`% of the simulations. 
+To get a sense of the outcomes of this stimulation, one can use the Shiny App and repeatedly simulate `r Ngood` experiments (use the *generate again* button). In most of the cases, the `r Ngood` experiments do not yield `r Ngood` significant p-values. Actually, this only happens in `r Nall`% of the simulations.
+
+__*Assignment:*__
+*Select a number of simulated samples and see how often all the simulated correlations are significant. Test the effect of population size and correlation on this proportion.*
 
 ``` {r Plot2Good2Btrue, echo=FALSE, fig.cap=fig_nums("Plot2B")}
 Plot2B
@@ -713,7 +727,7 @@ Yall28 <- sum(Good2B528$NSig>0.99)
 Nall28 = 100*Yall28/Nsim
 ```
 
-This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth. Either they have plenty of studies in their file-drawer or they are use questionable practice to always obtain significant p-values. I personally find it depressing to assist to presentations with series of only significant studies with small sample size.
+This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth [@francis2013a]. Either they have plenty of studies in their file-drawer or they are use questionable practice to always obtain significant p-values. I personally find it depressing to assist to presentations with series of only significant studies with small sample size. This cannot reflect the reality [@lane2016].
 
 Note that the percentage of series of `r Ngood` simulations with `r Ngood` significant studies increases with power and sample size (N=`r PopSize`: `r Nall`%; N=`r PopSize28`: `r Nall28`%). Yet, even with 80% power, these remain the minority (`r 100-Nall28`% of the series of `r Ngood` simulations contain at least one non-significant p-value).
 
@@ -735,7 +749,7 @@ Yall28_10 <- sum(Good2B528_10$NSig>0.99)
 Nall28_10 = 100*Yall28_10/Nsim
 ```
 
-In contrast, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are too good to be true.
+In contrast, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are too good to be true [@francis2014].
 
 ## extending this line of thought to the T-test
 
@@ -770,7 +784,7 @@ Outlier4 <- ggplot(Scatter1) +
 fig_nums("Outlier4", paste("example of a correlation biased by an outlier (in red) when the simulated R is ", Rval, ", the sample size is", PopSize, " and the outlier is", SDdist, "standard deviation away from the mean"),display=FALSE)
 ```
 
-To generate an outlier, we will first generate the x and y parameteres for the `r PopSize` individuals. We will then compute their mean and standard deviation, the data from the last individual will then be replaced by a point `r SDdist` standard deviation away from the mean (mean + 3*SD). This will be done for both x and y variables for this individual. By doing so, one obtains the following grahics.
+To generate an outlier, we will first generate the x and y parameters for the `r PopSize` individuals. We will then compute their mean and standard deviation, the data from the last individual will then be replaced by a point `r SDdist` standard deviation away from the mean (mean + `r SDdist`*SD). This will be done for both x and y parameters of this individual. By doing so, one obtains the following grahics.
 
 ``` {r PlotExampleOutlier, echo=FALSE, fig.cap=fig_nums("Outlier4")}
 Outlier4
