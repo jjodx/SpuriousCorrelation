@@ -45,6 +45,7 @@ ui <- fluidPage(
 # Server logic ----
 server <- function(input, output) {
   output$map <- renderPlot({
+    input$action
     PR <- switch(input$var, 
                    "Correlation" = "none",
                    "Correlation with outlier"= "outlier",
