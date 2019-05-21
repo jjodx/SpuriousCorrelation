@@ -459,8 +459,8 @@ for (i in c(1:Nsim)){
       res[i,"p"]<-R$P[1,2]
       res[i,"Sig"]<-res[i,"p"]<0.05
       # last minute addition
-      Rres50 <- cor.test(D[,1], D[,2], method = "pearson")
-      res[i,"CI"]<-Rres50$conf.int[2]-Rres50$conf.int[1]
+      Rres_50 <- cor.test(D[,1], D[,2], method = "pearson")
+      res[i,"CI"]<-Rres_50$conf.int[2]-Rres_50$conf.int[1]
 }
 
 Fcolor <- c("orange","lightblue")
@@ -688,11 +688,12 @@ PP150_28
 
 The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. __*Define Confidence interval*__
 
-In `r fig_nums("PPCI_50",display="cite")` and `r fig_nums("PPCI_28",display="cite")`, we compare the width of the confidence interval of the simulated correlations with N= `r PopSize` and N=`r PopSize28`, respectively. The width of the confidence interval was computed as the difference between the upper and lower bound of the 95% confidence interval. For instance, the CI of the correlation coefficient reported in `r fig_nums("PP450",display="cite")` was equal to CI: [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`]. The width of this confidence interval is thus `r format(Rres50$conf.int[2]-Rres50$conf.int[1], digits = 2)`. 
+In `r fig_nums("PP_CI",display="cite")`, we compare the width of the confidence interval of the simulated correlations with N= `r PopSize` and N=`r PopSize28`, respectively. The width of the confidence interval was computed as the difference between the upper and lower bound of the 95% confidence interval. For instance, the CI of the correlation coefficient reported in `r fig_nums("PP450",display="cite")` was equal to CI: [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`]. The width of this confidence interval is thus `r format(Rres50$conf.int[2]-Rres50$conf.int[1], digits = 2)`, which is pretty close to the median CI width when N=`r PopSize`. 
 ``` {r PlotCI, echo=FALSE, fig.cap=fig_nums("PP_CI")}
 PP_CI
 ```
 
+Comparing the two panels of `r fig_nums("PP_CI",display="cite")` demonstrate that increasing the sample size increase the accuracy of the estimation of each individual correlation coefficient (confidence intervals become narrower) in addition to increasing the accuracy of the estimation over multiple experiments (spread of simulated correlations coefficient is smaller when sample size increases, `r fig_nums("PP150",display="cite")` vs. `r fig_nums("PP150_28",display="cite")`). This shows that increasing sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient.
 ### understanding that publication bias inflates effect size
 
 `r fig_nums("PP150_28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in `r fig_nums("PP150_28",display="cite")`, with N= `r PopSize28`), this average correlation (mean R=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
@@ -1499,11 +1500,13 @@ Simulations can be  useful to get insights on statistics.
 
 4) publication bias is bad for effect size estimation [@nissen2016; @sutton2000].
 
-5) when power is low, increase in effect size overestimation, increase in CI for estimated R, increase in the effect of outliers.
+5) when power is low, increase in effect size overestimation, increase in CI for estimated R at the population level, increase in the effect of outliers.
 
-6) It is impossible to never observe non-signifcant p-values. Some scientists present resuls that are too good to be true. Anybody should be warry of scientists who only publish significant results with small samples [@schimmack2012].
+6) increasing sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient.
 
-7) Simulations can be useful to test potential solution to encountered problems. For instance, I did not know whether Spearman correlation was able to handle outliers or not. The simulations clearly showed that it does not.
+7) It is impossible to never observe non-signifcant p-values. Some scientists present resuls that are too good to be true. Anybody should be warry of scientists who only publish significant results with small samples [@schimmack2012].
+
+8) Simulations can be useful to test potential solution to encountered problems. For instance, I did not know whether Spearman correlation was able to handle outliers or not. The simulations clearly showed that it does not.
 
 
 # References
