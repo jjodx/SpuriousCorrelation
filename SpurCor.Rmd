@@ -31,12 +31,9 @@ fig_nums <- captioner()
 
 ## To do for JJ
 
-1. Make terminology clearer: population-variable-sample-observations
-8. add comments to code
-9. make assignments for each section
 12. does Bayes Factor solves it? (solve the influence of outliers and subgroups on significance of correlation)
-13. add confidence to all measures of correlations.
-
+14. use ggarrange more
+15. zoom on p-values below 0.05??
 
 Refer to Bishop blog:
 
@@ -60,11 +57,7 @@ Statistical significance is at the heart of a philosophical debate [@wasserstein
 
 But p-values on their own have very little value if they are not coupled to the effect size of an effect [@hubbard2008]. Indeed, while we sommetimes want to know whether a relationship exist between two variables (e.g. air pollution and respiratory disease), we often also want to know the importance of this link. Does hair pollution explains 0.1 or 25% of respiratory disease incidence. The ability to estimate the importance of such relationship is referred to as the estimation problem. Estimation is important not for distinguishing between two theories but to assess the magnitude of the relationship [@sullivan2012]. The estimation problem is made complicated by publication bias [@joober2012; @mlinaric2017; @song2013]. That is, people do not cherish not significant effect and rarely published them while significant effects are published very easily. We will thus use simulation to understand how publication bias is a threat for the estimation of the magnitude of the effect size.
 
-This publication bias is also linked to the presentation of results that are too good to be true [@francis2013a]. Simulation of artificial data can also provide us with information about the type of results that should be expected [@lakens2017a]. That is, if two variables are correlated and we run three times the same experiment, how many significant p-values do you expect? As EJ Wagenmakers asks (https://twitter.com/EJWagenmakers/status/889987997046910978):
-You read two papers, each reporting three preregistered analyses. Which effect is more likely to replicate?
-A: p=0.024, p=0.034 and p=0.031
-B: p=0.25, p=0.032 and p=0.0001
-Note that tackling this question will tell what the expected patterns of p-values are in the presence of an effect. 
+This publication bias is also linked to the presentation of results that are too good to be true [@francis2013a]. Simulation of artificial data can also provide us with information about the type of results that should be expected [@lakens2017a]. That is, if two variables are correlated and we run three times the same experiment, how many significant p-values do you expect? Note that tackling this question will tell what the expected patterns of p-values are in the presence of an effect. 
 
 The simulations and corresponding p-values reported in this paper were based on the correlation between two variables. Correlation was chosen as an example of statistical test because it is very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables [@leerodgers1988; @taylor1990]. While the correlation coefficient has been deemed to be robust against violations of the assumptions [@havlicek1976], we now know that it is at least extremely sensitive to outliers [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
 
@@ -643,11 +636,7 @@ PP150 <- ggplot(res, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
-  fig_nums("PP150", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
-```
-
-``` {r PlotDistriR_R50_N15, echo=FALSE, fig.cap=fig_nums("PP150")}
-PP150
+  # fig_nums("PP150", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
 
 ``` {r DistriR_R50_N28, echo=FALSE}
@@ -677,7 +666,8 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
-fig_nums("PP150_28", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
+PP15vs28 <- ggarrange(PP150,PP150_28,ncol = 2, nrow = 1,labels = c("A","B"))
+fig_nums("PP15vs28", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize, "(panel A) and ", PopSize28, "(panel B)"),display=FALSE)
 ```
 
 On `r fig_nums("PP150_28",display="cite")`, we can see that while many simulated correlations are around the value of `r Rval50`, the value of the obtained correlations are spread over a large interval. Indeed, the simulated correlations exhibited a large 95% confidence interval: between `r format(quantile(res$R,0.025),digits = 2)` and  `r format(quantile(res$R,0.975),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the 95% confidence interval of simulated correlation ([`r format(quantile(res28$R,0.025),digits = 2)`,`r format(quantile(res28$R,0.975),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
@@ -694,6 +684,7 @@ PP_CI
 ```
 
 Comparing the two panels of `r fig_nums("PP_CI",display="cite")` demonstrate that increasing the sample size increase the accuracy of the estimation of each individual correlation coefficient (confidence intervals become narrower) in addition to increasing the accuracy of the estimation over multiple experiments (spread of simulated correlations coefficient is smaller when sample size increases, `r fig_nums("PP150",display="cite")` vs. `r fig_nums("PP150_28",display="cite")`). This shows that increasing sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient.
+
 ### understanding that publication bias inflates effect size
 
 `r fig_nums("PP150_28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in `r fig_nums("PP150_28",display="cite")`, with N= `r PopSize28`), this average correlation (mean R=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
@@ -790,12 +781,17 @@ Nall28_10 = 100*Yall28_10/Nsim
 
 In contrast, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are too good to be true [@francis2014].
 
-## Understanding p-values: final assignment
+## Understanding p-values: final assignments
 
 I have describe p-values distribution when there is an effect (R=0.5) or when there isn't (R=0). Now, let's test whether the attentive readers can solve the following problem [@gigerenzer2018]:
 Consider a simple example: A researcher designs an experiment with 50% power to detect an effect of a medium size  and obtains a significant difference between means, p < .05. How likely is this ressearcher to replicate this effect in a second experiment with the same sample size (1) if there is an effect or (2) if there is no effect.
 
-If the alternative hypothesis is true, then the probability of getting another significant result equals the statistical power of the test, that is, 50%. If, however, the null hypothesis is true, the probability of getting another significant result would still be only 5%.
+*If the alternative hypothesis is true, then the probability of getting another significant result equals the statistical power of the test, that is, 50%. If, however, the null hypothesis is true, the probability of getting another significant result would still be only 5%.*
+
+You read two papers, each reporting three preregistered analyses. Which effect is more likely to replicate?
+A: p=0.024, p=0.034 and p=0.031
+B: p=0.25, p=0.032 and p=0.0001
+source: https://twitter.com/EJWagenmakers/status/889987997046910978
 
 ## extending this line of thought to the T-test
 
@@ -1110,7 +1106,7 @@ SubG4 <- ggplot(Scatter1) +
   fig_nums("SubG4",paste("Example of correlation biased by differences between subgroups", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-To generate subgroups, we first generate the x and y parameteres for the `r PopSize` individuals. We will then split the population into two subgroups and add a value of `r SDdistSub` to each the values of both varialbes for one of the two subgroups. By doing so, one obtains the following grahics.
+To generate subgroups, we first generate the x and y parameters for the `r PopSize` individuals. We will then split the population into two subgroups and add a value of `r SDdistSub` to each the values of both varialbes for one of the two subgroups. By doing so, one obtains the following grahics.
 
 ``` {r PlotExampleSubgroup, echo=FALSE, fig.cap=fig_nums("SubG4")}
 SubG4
@@ -1489,32 +1485,28 @@ Taking subgroups into account does not prevent us from detecting correlations wh
 PP1Reg50
 ```
 
-
-
-## it can become more complicated.
-
-Simulation to demonstrate how you should decide which covariates to adjust for in the context of a randomized controlled trial.
-https://twitter.com/statsepi/status/1115902270888128514
-
 # What have we learned?
 Simulations can be  useful to get insights on statistics.
 
-1) distribution of p-value under no correlation is flat . Same probability of observing p<0.05 than p>0.95
+1) The distribution of p-value under no correlation is flat . Same probability of observing p<0.05 than p>0.95 [@benjamini1995controlling].
 
 2) Even in the presence of an effect, some p-values can be non-significant [@lakens2017a]. 
 
 3) In the presence of an effect, proportion of significant p-values provide information about power. In the absence of an effect, it represents the number of false positives.
 
-4) publication bias is bad for effect size estimation [@nissen2016; @sutton2000].
+4) Publication bias is bad for effect size estimation [@nissen2016; @sutton2000].
 
-5) when power is low, increase in effect size overestimation, increase in CI for estimated R at the population level, increase in the effect of outliers.
+5) When power is low, the overestimation of effect size is large, the with of the CI of the indivdiual correlation coefficient, the uncertainty of around the correlation coefficient is large, the effect of irregularities in the data (outliers or subgroups) is also prominent [@button2013].
 
-6) increasing sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient.
+6) Increasing the sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient.
 
-7) It is impossible to never observe non-signifcant p-values. Some scientists present resuls that are too good to be true. Anybody should be warry of scientists who only publish significant results with small samples [@schimmack2012].
+7) Getting significant p-values is not difficult, one just needs to try enough different statistical tests [@bennett2011]. 
 
-8) Simulations can be useful to test potential solution to encountered problems. For instance, I did not know whether Spearman correlation was able to handle outliers or not. The simulations clearly showed that it does not.
+8) Having a mix of significant and non-significant results is normal and should become the norm. Some scientists present resuls that are too good to be true. Anybody should be warry of scientists who only publish significant results with small samples [@schimmack2012].
 
+9) Simulations can be useful to test potential solution to encountered problems. For instance, the simulations clearly demonstrated that winsorised but not Spearman correlations can handle outliers [@pernet2013; @rousselet2012a].
+
+This paper represents an introduction to the use of simulations to understand the concept of p-values, power and to test solutions to irregularities in the data. Yet, more advanced use of simulations are also possible. For instance, simulations can be used to demonstrate how you should decide which covariates to adjust for in the context of a randomized controlled trial (https://twitter.com/statsepi/status/1115902270888128514).
 
 # References
 
