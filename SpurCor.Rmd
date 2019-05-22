@@ -790,6 +790,13 @@ Nall28_10 = 100*Yall28_10/Nsim
 
 In contrast, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are too good to be true [@francis2014].
 
+## Understanding p-values: final assignment
+
+I have describe p-values distribution when there is an effect (R=0.5) or when there isn't (R=0). Now, let's test whether the attentive readers can solve the following problem [@gigerenzer2018]:
+Consider a simple example: A researcher designs an experiment with 50% power to detect an effect of a medium size  and obtains a significant difference between means, p < .05. How likely is this ressearcher to replicate this effect in a second experiment with the same sample size (1) if there is an effect or (2) if there is no effect.
+
+If the alternative hypothesis is true, then the probability of getting another significant result equals the statistical power of the test, that is, 50%. If, however, the null hypothesis is true, the probability of getting another significant result would still be only 5%.
+
 ## extending this line of thought to the T-test
 
 if we follow the same line of reasoning, one can investigate the distribution of p-values obtained from t-test aiming at comparing two independent groups. That is, instead of correlating the variables obtained from the random sampling, one can simply compare them with a t-test (the covariance matrix should have zeros on his off-diagonal elements). To simulate a difference between the two groups, one needs to change the mean of one of the groups. 
