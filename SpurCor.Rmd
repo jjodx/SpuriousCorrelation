@@ -28,27 +28,6 @@ library(ggpubr) # for ggarrange
 fig_nums <- captioner()
 ```
 
-## To do for JJ
-
-14. use ggarrange more
-15. zoom on p-values below 0.05??
-
-Refer to Bishop blog:
-
-http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html
-
-https://deevybee.blogspot.com/2017/11/anova-t-tests-and-regression-different.html
-
-https://deevybee.blogspot.com/2017/12/using-simulations-to-understand.html
-
-http://deevybee.blogspot.com/2017/12/using-simulations-to-understand-p-values.html
-
-https://www.slideshare.net/deevybishop/introduction-to-simulating-data-to-improve-your-research
-
-Vickers:what is a p-value anyway?
-Alex Reinhart: statistics done wrong
-
-
 # Introduction
 
 Statistical significance and the concept of p-values are at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values [@szucs2017], should we use a more severe significance threshold [@benjamin2018], an adapted one [@lakens2018] or remove it entirely [@amrhein2018a]? These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used [@colquhoun2014; @gagnier2017a; @greenland2016]. A p-value can be defined as follows: "*the P value can be viewed as a continuous measure of the compatibility between the data and the entire model used to compute it, ranging from 0 for complete incompatibility to 1 for perfect compatibility*" [@greenland2016] or "*p-value is the probability that the data would be equal to or more extreme than what would be expected by chance.*". Yet, such definition does not provide a lot of insights for most people on how p-values behave in different circumstances. Here, we use our ability to generate random samples of different populations as a tool to get insights into p-values [@colquhoun2014; @martins2018; @ohara2019; @tintle2015]. These simulations of randomly correlated or uncorrelated variables are done with correlations as the statistical test of interest. These simulations highlight and many problems that have been discussed in meta-science (the science of science). This part adresses the significance problem linked to p-values.
@@ -61,7 +40,7 @@ This publication bias is also linked to the presentation of results that are too
 
 The simulations and corresponding p-values reported in this paper were based on the correlation between two variables. Correlation was chosen as an example of statistical test because it is very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables [@leerodgers1988; @taylor1990]. While the correlation coefficient has been deemed to be robust against violations of the assumptions [@havlicek1976], we now know that it is at least extremely sensitive to outliers [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
 
-Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values [@ohara2019; @tintle2015], to get insights into the estimation problem [@pernet2013] and to find the best technique to account for irregularities in the data [@rousselet2012a].
+Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values [@ohara2019; @tintle2015], to get insights into the estimation problem [@pernet2013] and to find the best technique to account for irregularities in the data [@rousselet2012a]. This paper is partially inspirated by the blogposts of Prof. Dorothy Bishop: [Blog 1](http://deevybee.blogspot.com/2017/11/how-analysis-of-variance-works.html), [Blog 2](https://deevybee.blogspot.com/2017/11/anova-t-tests-and-regression-different.html), [Blog3](https://deevybee.blogspot.com/2017/12/using-simulations-to-understand.html), [Blog 4](http://deevybee.blogspot.com/2017/12/using-simulations-to-understand-p-values.html), [Presentation](https://www.slideshare.net/deevybishop/introduction-to-simulating-data-to-improve-your-research)
 
 # Learning about statistics from simulated correlations.
 
@@ -237,8 +216,8 @@ PP2
 
 Interestingly, even in the absence of correlation between the parameters x and y, there is a subset of correlations associated with a p-value under the significance threshold (type II error). Those are highlighted in orange in `r fig_nums("PP2", display = "cite")` and are called false-positives. That is, these correlations are significant despite the fact that the underlying variables x and y (that where measured on `r PopSize` participants) are, by design, not correlated. Given that the distribution of p-values is uniform and that p-values fall in the interval [0,1], there will always be 5% of the p-values under the threshold of 0.05, independently of the number of samples for the two variables.
 
-__*Assignment:*__
-*check that increasing the population size (value of PopSize in the code) does not influence the distribution of p-values when the two variables are unccorelated.*
+> __*Assignment:*__
+> *check that increasing the population size (value of PopSize in the code) does not influence the > distribution of p-values when the two variables are unccorelated.*
 
 ``` {r RectangleErrorTypeR0, echo=FALSE}
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
@@ -488,10 +467,12 @@ PPCI_50 <- ggplot(res, aes(x=CI, fill=Sig)) +
 PP2_50
 ```
 
+In this graph, it appears very clearly that p-values represents a continuous quantity and that there is nothing special about the 0.05 threshold. It also shows that in the presence of an effect, getting a p-value between 0.04 and 0.05 is not as likely as getting a p-value below 0.01. This reinforces the statement that we should not dichotomize p-values in p<0.05 and p>0.05.
 `r fig_nums("PP2_50",display="cite")` also shows that non-significant p-values cannot be considered as a proof that there are no correlation between the variables x and y. Indeed, despite the fact that the underlying variables are correlated (R = `r Rval50`), a portion of the simulated correlations are not significant. The non-significant correlations on `r fig_nums("PP2_50",display="cite")` are false-negative. That is, these correlations are are not significant even though the underlying variables x and y are correlated. False-negative correlations correspond to type II error, which is linked to the power of an experiment.
 
+
 __*Assignment:*__
-*Explore the shape of the p-value distribution for correlation of different sizes and for different population size*
+*Explore the shape of the p-value distribution for correlation of different sizes and for different population size. Pay particular attention to the distribution of p-values below 0.05.*
 
 ``` {r RectangleErrorTypeR50, echo=FALSE}
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('a','b'))
@@ -730,18 +711,9 @@ On `r fig_nums("PP15vs28",display="cite")`, we can see that while many simulated
 PP15vs28
 ```
 
-The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. The 95% confidence interval give you a range of plausible values for the correlation for this particular sample/population. This interval has a 95% chance of containing the true effect size (here, the true value fo the correlation). To check this definition, we commputed the CI for each correlation presented on `r fig_nums("PP28",display="cite")`, and computed the proportion of simulated confidence intervals that included the true value of the correlation (R=`r Rval50`). Consistent with the definition, 95% of them did include the true effect size (see panel A of`r fig_nums("PPCIboth",display="cite")`).
+The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. The 95% confidence interval give you a range of plausible values for the correlation for this particular sample/population. This interval has a 95% chance of containing the true effect size (here, the true value fo the correlation). To check this definition, we commputed the CI for each correlation presented on `r fig_nums("PP28",display="cite")`, and computed the proportion of simulated confidence intervals that included the true value of the correlation (R=`r Rval50`). Consistent with the definition, 95% of them did include the true effect size (see panel A of `r fig_nums("PPCIboth",display="cite")`).
 
-As a correlate of this demonstration, it is interesting to investigate what the probability that the correlation of a second experiment will fall into the CI of the correlation of a first experiment. For instance, the CI for the correlation presented in  was . 
-What is the chance that a second experiment with the same sample size provides a correlation that falls in this CI. To simulate this case;However, it is interesting to My question was the following: If we perform an experiment once and compute the 95% confidence interval of the mean (e.g. [0.1 to 0.4]). What is the probability that, if we repeat the experiment, the new sample mean will fall within the previously computed confidence interval (see Matlab code below).
-(see panel B of`r fig_nums("PPCIboth",display="cite")`)
-Yesterday, I would have said 95%. But I would have been wrong.
-
-It turns out that there is ONLY a 83% probability that the new sample mean (based on 100 samples) will fall within the computed 95% confidence interval and this number does not depend on the number of samples taken (same result with n=1000)
-
-For the (larger) 99% confidence interval, this probability rises to 93%.
-
-So the confidence interval does not provide a lot of information about the sample mean.
+As a correlate of this demonstration, it is interesting to investigate what the probability that the correlation of a second experiment will fall into the CI of the correlation of a first experiment. For instance, the CI for the correlation presented in `r fig_nums("PP450",display="cite")` was [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`]. What is then the chance that a second experiment with the same sample size provides a correlation that falls in this CI. To simulate this case,we will test whether the correlation of the simulated correlation #n falls within the 95% confidence interval of correlation #n-1.The results show that there is ONLY a `r format(CI28prev*100, digits = 0)`% probability that this is the case (see panel B of `r fig_nums("PPCIboth",display="cite")`).
 
 ``` {r DefinitionOfCI, echo=FALSE, fig.cap=fig_nums("PPCIboth")}
 PPCIboth
@@ -1074,7 +1046,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
   fig_nums("PP3Spear",paste("Ability of Spearman correlation to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-A first solution is to use a non-parametric rank correlation such as Spearman (__*DEFINE*__). Here, the graph below shows that the influence of the outlier is much reduced and the type I error rate (= `r format(PsigSpear*100,digits=0)`%) is not very close to the 5% level.
+A first solution is to use a non-parametric rank correlation such as Spearman (non-parametric version of the Pearson correlation). Here, the graph below shows that the influence of the outlier is much reduced and the type I error rate (= `r format(PsigSpear*100,digits=0)`%) is not very close to the 5% level.
 ``` {r PlotSpearOultier, echo=FALSE, , fig.cap=fig_nums("PP3Spear")}
 PP3Spear
 ```
@@ -1143,7 +1115,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
     fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-In contrast, the use of winsorized correlation (__*DEFINE*__) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by the graph below, which shows that the influence of the outlier is eliminated and the type I error rate (= `r PsigRob`) is very close to the 5% level.
+In contrast, the use of winsorized correlation ([@pernet2013]) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by the graph below, which shows that the influence of the outlier is eliminated and the type I error rate (= `r PsigRob`) is very close to the 5% level.
 
 ``` {r PlotRobOutlier, echo=FALSE, fig.cap=fig_nums("PP3Rob")}
 PP3Rob

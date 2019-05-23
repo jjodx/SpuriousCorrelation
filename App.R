@@ -32,7 +32,7 @@ ui <- fluidPage(
                 min = -1, max = 1, value = 0),
       numericInput("PopSize", 
                 label = "Population size",
-                min = 2, max = 1000, value = 20),
+                min = 2, max = 1000, value = 15),
     sliderInput("SDdist", 
                 label = "distance from mean: outlier/Population",
                 min = 0, max = 5, value = 3),

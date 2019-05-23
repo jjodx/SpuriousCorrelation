@@ -131,14 +131,14 @@ report <- function(ListOut){
 
 
 # function to simulate the correlations
-# PopulationSize = size of the simulated sample. default N=20
+# PopulationSize = size of the simulated sample. default N=15
 # Nsim: number of simulations performed. Ideally 10000. For speed; default = 1000
 # Rval: we are going to simulate two variables. Rval is the theoretical influence of these variables? Defaut = 0
 # Problem can be: none, outlier, subpop(ulations) or skewed
 # SDdist: case Problem = none -> useless
 #         case Problem = outlier -> distance of outlier from population mean (unit is standard deviation)
 #         case Problem = subpop -> distance between two subpopulation means (unit is standard deviation)
-SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no", BS="wide"){
+SimulateCorr <- function(PopSize=15,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no", BS="wide"){
   # simulations of p-value distribution in the absence of correlations.
   Sigma <- matrix(c(1,Rval,Rval,1),2,2)
   
@@ -223,7 +223,7 @@ SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
   return(list(res,Scatter1,POP,Txt))
 }
 
-writeTXT <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no",BinSize=0.05){
+writeTXT <- function(PopSize=15,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no",BinSize=0.05){
   Prob <- switch(Problem, 
                  "none" = NULL,
                  "outlier" = " with an outlier",
