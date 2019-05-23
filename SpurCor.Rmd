@@ -4,14 +4,13 @@ title: Simulating correlations to get insights into statistics and their robustn
 author: "Jean-Jacques Orban de Xivry"
 date: "May 19, 2019"
 output:
-  html_document:
-    fig_caption: yes
   pdf_document:
     fig_caption: yes
   word_document:
     fig_caption: yes
+  html_document:
+    fig_caption: yes
 bibliography: StatLibrary.bib
-
 ---
 
 ```{r setup, include=FALSE}
@@ -47,7 +46,7 @@ Therefore, the goal of this paper is to show that simulation of artificial data 
 ```{r ParamDef, echo=FALSE}
 # defining default parameters
 PopSize=15 # size of the population/sample
-Nsim=100 # number of simulated populations/samples. 100 to go fast / should be 10000
+Nsim=10000 # number of simulated populations/samples. 100 to go fast / should be 10000
 Rval=0 # for simulating when there is no correlations between the measured parameters
 Rval50=0.5 # for generating correlated measured parameters within a population
 BinSize <- 0.01 # for histograms of p-values
