@@ -36,7 +36,10 @@ ui <- fluidPage(
     sliderInput("SDdist", 
                 label = "distance from mean: outlier/Population",
                 min = 0, max = 5, value = 3),
-    actionButton("action", label = "Generate again")
+    actionButton("action", label = "Generate again"),
+    selectInput("BinSize", "Bin Size (for p-values):",
+                c("0.05" = "wide",
+                  "0.01" = "narrow"))
   ),  
   mainPanel(plotOutput("map"))
   )
@@ -50,7 +53,7 @@ server <- function(input, output) {
                    "Correlation" = "none",
                    "Correlation with outlier"= "outlier",
                    "Correlation with subgroups" = "subpop"
-                   )
+    )
  
     report(SimulateCorr(PopSize=input$PopSize,
                         Nsim=input$Nsim,
@@ -58,7 +61,8 @@ server <- function(input, output) {
                         Problem=PR,
                         SDdist=input$SDdist,
                         Skewness=2,
-                        Solution=input$Solution))
+                        Solution=input$Solution,
+                        BS=input$BinSize))
   })
 }
 

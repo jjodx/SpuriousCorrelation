@@ -15,6 +15,7 @@ report <- function(ListOut){
   TiTxt <- TXT[[1]]
   InfoTxt <- TXT[[2]]
   Rval <- TXT[[3]]
+  BinSize <- TXT[[4]]
   CountSig <- sum(dat$Sig)
   Psig <- CountSig/length(dat$Sig)
   
@@ -25,7 +26,7 @@ report <- function(ListOut){
     Fcolor <- c("orange")
     Rsig <- Rval
   }else{
-    Rsig <- mean(dat$R[dat$Sig==0])
+    Rsig <- mean(dat$R[dat$Sig==1])
     Fcolor <- c("orange","lightblue")
   }
   
@@ -62,10 +63,10 @@ report <- function(ListOut){
   
   
   PP2 <- ggplot(dat, aes(x=p, fill=Sig)) + 
-    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
-    geom_hline(yintercept=CountSig, linetype="dashed", color = "black") +
-    geom_label(aes(x = 0, y = CountSig, label = "H0"), 
+    geom_hline(yintercept=sum(dat$SigBin), linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = sum(dat$SigBin), label = "H0"), 
                hjust = "left", 
                vjust = "bottom", 
                colour = "black", 
@@ -137,7 +138,7 @@ report <- function(ListOut){
 # SDdist: case Problem = none -> useless
 #         case Problem = outlier -> distance of outlier from population mean (unit is standard deviation)
 #         case Problem = subpop -> distance between two subpopulation means (unit is standard deviation)
-SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no"){
+SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no", BS="wide"){
   # simulations of p-value distribution in the absence of correlations.
   Sigma <- matrix(c(1,Rval,Rval,1),2,2)
   
@@ -156,6 +157,11 @@ SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
                 "outlier" = c("Main","outlier"),
                 "subpop" = c("Pop1","Pop2"),
                 "skewed" = c("Main")
+  )
+  
+  BinSize <- switch(BS, 
+                 "wide" = 0.05,
+                 "narrow"= 0.01
   )
   res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
   Z <- rep(0,PopSize)
@@ -193,6 +199,7 @@ SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
       res[i,"R"] <- R$r[1,2]
       res[i,"p"]<-R$P[1,2]
       res[i,"Sig"]<-res[i,"p"]<0.05
+      res[i,"SigBin"]<-res[i,"p"]<BinSize
     } 
     else {
       if (dProblem <= 1){ # outlier
@@ -200,6 +207,7 @@ SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
         res[i,"R"] <- R$cor
         res[i,"p"]<-R$p.value
         res[i,"Sig"]<-res[i,"p"]<0.05
+        res[i,"SigBin"]<-res[i,"p"]<BinSize
       }
       else { # two subpopulations
         Rrr <- lm(D2 ~ D1+Z, Add)
@@ -207,14 +215,15 @@ SimulateCorr <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
         res[i,"R"] <-SumRrr$coefficients[2,1] #Normalized coefficient
         res[i,"p"] <- SumRrr$coefficients[2,4] #p-value
         res[i,"Sig"]<-res[i,"p"]<0.05
+        res[i,"SigBin"]<-res[i,"p"]<BinSize
       }
     }
   }
-  Txt <- writeTXT(PopSize=PopSize,Nsim=Nsim,Rval=Rval,Problem=Problem,SDdist=SDdist,Skewness=Skewness,Solution=Solution)
+  Txt <- writeTXT(PopSize=PopSize,Nsim=Nsim,Rval=Rval,Problem=Problem,SDdist=SDdist,Skewness=Skewness,Solution=Solution,BinSize=BinSize)
   return(list(res,Scatter1,POP,Txt))
 }
 
-writeTXT <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no"){
+writeTXT <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewness=2,Solution="no",BinSize=0.05){
   Prob <- switch(Problem, 
                  "none" = NULL,
                  "outlier" = " with an outlier",
@@ -241,5 +250,5 @@ writeTXT <- function(PopSize=20,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewnes
                      ")", Prob,TxtSol)
   ParamTxT <- paste0("# of simulations: ", Nsim,"; Population Size:",PopSize,
                      ";")
-  return(list(TitleTxt,ParamTxT,Rval))
+  return(list(TitleTxt,ParamTxT,Rval,BinSize))
 }
