@@ -31,7 +31,6 @@ fig_nums <- captioner()
 
 ## To do for JJ
 
-12. does Bayes Factor solves it? (solve the influence of outliers and subgroups on significance of correlation)
 14. use ggarrange more
 15. zoom on p-values below 0.05??
 
@@ -53,7 +52,9 @@ Alex Reinhart: statistics done wrong
 
 # Introduction
 
-Statistical significance is at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values [@szucs2017], should we use a more severe significance threshold [@benjamin2018], an adapted one [@lakens2018] or remove it entirely [@amrhein2018a]? These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used [@colquhoun2014; @gagnier2017a; @greenland2016]. Furthermore, many people do not have a lot of insights how p-values behave in different circumstances. Here, we use our ability to generate random samples of different populations as a tool to get insights into p-values [@colquhoun2014; @martins2018; @ohara2019; @tintle2015]. These simulations of randomly correlated or uncorrelated variables are done with correlations as the statistical test of interest. These simulations highlight and many problems that have been discussed in science. This part adresses the significance problem linked to p-values.
+Statistical significance and the concept of p-values are at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values [@szucs2017], should we use a more severe significance threshold [@benjamin2018], an adapted one [@lakens2018] or remove it entirely [@amrhein2018a]? These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used [@colquhoun2014; @gagnier2017a; @greenland2016]. A p-value can be defined as follows: "*the P value can be viewed as a continuous measure of the compatibility between the data and the entire model used to compute it, ranging from 0 for complete incompatibility to 1 for perfect compatibility*" [@greenland2016] or "*p-value is the probability that the data would be equal to or more extreme than what would be expected by chance.*". Yet, such definition does not provide a lot of insights for most people on how p-values behave in different circumstances. Here, we use our ability to generate random samples of different populations as a tool to get insights into p-values [@colquhoun2014; @martins2018; @ohara2019; @tintle2015]. These simulations of randomly correlated or uncorrelated variables are done with correlations as the statistical test of interest. These simulations highlight and many problems that have been discussed in meta-science (the science of science). This part adresses the significance problem linked to p-values.
+
+
 
 But p-values on their own have very little value if they are not coupled to the effect size of an effect [@hubbard2008]. Indeed, while we sommetimes want to know whether a relationship exist between two variables (e.g. air pollution and respiratory disease), we often also want to know the importance of this link. Does hair pollution explains 0.1 or 25% of respiratory disease incidence. The ability to estimate the importance of such relationship is referred to as the estimation problem. Estimation is important not for distinguishing between two theories but to assess the magnitude of the relationship [@sullivan2012]. The estimation problem is made complicated by publication bias [@joober2012; @mlinaric2017; @song2013]. That is, people do not cherish not significant effect and rarely published them while significant effects are published very easily. We will thus use simulation to understand how publication bias is a threat for the estimation of the magnitude of the effect size.
 
@@ -63,7 +64,6 @@ The simulations and corresponding p-values reported in this paper were based on 
 
 Therefore, the goal of this paper is to show that simulation of artificial data can be a valid tool to understand the behavior of p-values [@ohara2019; @tintle2015], to get insights into the estimation problem [@pernet2013] and to find the best technique to account for irregularities in the data [@rousselet2012a].
 
-
 # Learning about statistics from simulated correlations.
 
 ```{r ParamDef, echo=FALSE}
@@ -72,6 +72,7 @@ PopSize=15 # size of the population/sample
 Nsim=100 # number of simulated populations/samples. 100 to go fast / should be 10000
 Rval=0 # for simulating when there is no correlations between the measured parameters
 Rval50=0.5 # for generating correlated measured parameters within a population
+BinSize <- 0.05 # for histograms of p-values
 ```
 
 Let's imagine the following experiment. Researchers from Klow in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant $i$, they have two observations: $(x_i,y_i)$ where $x_i$ is the height of the participant and $y_i$ is his/her working memory capacity. Then, the researchers decided to test the correlation between these two variables for their population.
@@ -175,7 +176,7 @@ library(ggplot2)
 # plotting the distribution of p-values
 Fcolor <- c("lightblue","orange")
 ggplot(res, aes(x=p, fill=Sig)) + 
-  geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black")+
+  geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black")+
   scale_fill_manual(values = Fcolor)
 ```
 
@@ -211,7 +212,7 @@ CountSig <- sum(res$Sig)
 Psig <- CountSig/length(res$Sig)
 res$Sig = factor(1-res$Sig)
 PP2 <- ggplot(res, aes(x=p, fill=Sig)) + 
-    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
     geom_hline(yintercept=CountSig, linetype="dashed", color = "black") +
     geom_label(aes(x = 0, y = CountSig, label = "H0"), 
@@ -266,10 +267,11 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
                size = 3,
                fill = NA)+
     geom_hline(yintercept=0, color = "black") +
-    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
-    labs(title="",y="\n \n \nProportion of simulations")+
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1)) +
+    labs(title="",y="\n \n \nProportion of simulations") +
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+    theme(axis.title.x = element_blank(),axis.text.x = element_blank(),
+          axis.ticks.x=element_blank())
   fig_nums("PP3_0", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
@@ -461,7 +463,7 @@ CountSig <- sum(res$Sig)
 Psig <- CountSig/length(res$Sig)
 res$Sig = factor(1-res$Sig)
 PP2_50 <- ggplot(res, aes(x=p, fill=Sig)) + 
-    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(0, 1))+
     theme(legend.position='none')+
@@ -470,7 +472,7 @@ PP2_50 <- ggplot(res, aes(x=p, fill=Sig)) +
 fig_nums("PP2_50", paste("distribution of p-values when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 
 PPCI_50 <- ggplot(res, aes(x=CI, fill=Sig)) + 
-    geom_histogram(aes(x=CI,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    geom_histogram(aes(x=CI,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
@@ -518,7 +520,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
   fig_nums("PP3_50", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
 
@@ -536,15 +538,26 @@ set.seed(123)# to make sure everybody gets the same results
 Nsim=1000
   res28 <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
 Sigma <- matrix(c(1,Rval50,Rval50,1),2,2)
+# init for confidence interval
+CIlower <- 0
+CIupper <- 0
 for (i in c(1:Nsim)){
       D <- mvrnorm(n = PopSize28, rep(0, 2), Sigma, empirical = FALSE)
       R<-rcorr(D[,1],D[,2])
       res28[i,"R"] <- R$r[1,2]
       res28[i,"p"]<-R$P[1,2]
       res28[i,"Sig"]<-res28[i,"p"]<0.05
-      # last minute addition
+      # compute confidence interval
       Rres28 <- cor.test(D[,1], D[,2], method = "pearson")
+      # store width of confidence interval
       res28[i,"CI"]<-Rres28$conf.int[2]-Rres28$conf.int[1]
+      # determines whether CI contains true correlation
+      res28[i,"inCI"]<-Rres28$conf.int[1]<Rval50 & Rres28$conf.int[2]>Rval50
+      # determines whether the correlation on this simulation falls withing the CI of the previous simulation
+      res28[i,"inCIprev"]<-CIlower<res28[i,"R"] & CIupper>res28[i,"R"]
+      #update CI for use in next simulation
+      CIlower <- Rres28$conf.int[1]
+      CIupper <- Rres28$conf.int[2]
 }
 
 Fcolor <- c("orange","lightblue")
@@ -580,11 +593,51 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   fig_nums("PP28", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
   
-  PPCI_28 <- ggplot(res28, aes(x=CI, fill=Sig)) + 
+  # plotting data linked to definition of CI 
+  CountCI28 <- sum(res28$inCI)
+CI28 <- CountCI28/length(res28$inCI)
+  CIcolor <- c("lemonchiffon4","firebrick3")
+  dCI=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,CI28), y2=c(CI28,1), t=c('a','b'))
+  PPCIdef <- ggplot() +  
+    geom_rect(data=dCI, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = CIcolor, 
+                      name="",
+                      labels=c("in CI", "outside")) +
+    geom_hline(yintercept=0.95, linetype="dashed", color = "black") +
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+  # fig_nums("PPCIdef", paste("proportion of confidence interval including the actual effect size of R=", Rval50, ". Sample size used is", PopSize28, "but this is true for any sample size"),display=FALSE)
+
+# plotting data linked to misinterpretation of CI 
+  CountCI28prev <- sum(res28$inCIprev)
+CI28prev <- CountCI28prev/length(res28$inCIprev)
+  CIcolor <- c("lemonchiffon4","firebrick3")
+  dCIprev=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,CI28prev), y2=c(CI28prev,1), t=c('a','b'))
+  PPCIdefprev <- ggplot() +  
+    geom_rect(data=dCIprev, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), 
+              color="black") +
+    scale_fill_manual(values = CIcolor, 
+                      name="",
+                      labels=c("in CI", "outside")) +
+    geom_hline(yintercept=0, color = "black") +
+    coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
+    labs(title="",y="\n \n \nProportion of simulations")+
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+  PPCIboth <- ggarrange(PPCIdef,PPCIdefprev,ncol = 2, nrow = 1,labels = c("A","B"))
+  fig_nums("PPCIboth", paste("proportion of confidence intervals including the actual effect size of R=", Rval50, "(left panel) or the correlation coefficient of the next simulation (right panel). Sample size used is", PopSize28, "but this is true for any sample size"),display=FALSE)
+  
+   PPCI_28 <- ggplot(res28, aes(x=CI, fill=Sig)) + 
     geom_histogram(aes(x=CI,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
     theme(legend.position='none')+
@@ -673,8 +726,23 @@ On `r fig_nums("PP15vs28",display="cite")`, we can see that while many simulated
 PP15vs28
 ```
 
-The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. __*Define Confidence interval*__
+The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. The 95% confidence interval give you a range of plausible values for the correlation for this particular sample/population. This interval has a 95% chance of containing the true effect size (here, the true value fo the correlation). To check this definition, we commputed the CI for each correlation presented on `r fig_nums("PP28",display="cite")`, and computed the proportion of simulated confidence intervals that included the true value of the correlation (R=`r Rval50`). Consistent with the definition, 95% of them did include the true effect size (see panel A of`r fig_nums("PPCIboth",display="cite")`).
 
+As a correlate of this demonstration, it is interesting to investigate what the probability that the correlation of a second experiment will fall into the CI of the correlation of a first experiment. For instance, the CI for the correlation presented in  was . 
+What is the chance that a second experiment with the same sample size provides a correlation that falls in this CI. To simulate this case;However, it is interesting to My question was the following: If we perform an experiment once and compute the 95% confidence interval of the mean (e.g. [0.1 to 0.4]). What is the probability that, if we repeat the experiment, the new sample mean will fall within the previously computed confidence interval (see Matlab code below).
+(see panel B of`r fig_nums("PPCIboth",display="cite")`)
+Yesterday, I would have said 95%. But I would have been wrong.
+
+It turns out that there is ONLY a 83% probability that the new sample mean (based on 100 samples) will fall within the computed 95% confidence interval and this number does not depend on the number of samples taken (same result with n=1000)
+
+For the (larger) 99% confidence interval, this probability rises to 93%.
+
+So the confidence interval does not provide a lot of information about the sample mean.
+
+``` {r DefinitionOfCI, echo=FALSE, fig.cap=fig_nums("PPCIboth")}
+PPCIboth
+```
+ 
 In `r fig_nums("PP_CI",display="cite")`, we compare the width of the confidence interval of the simulated correlations with N= `r PopSize` and N=`r PopSize28`, respectively. The width of the confidence interval was computed as the difference between the upper and lower bound of the 95% confidence interval. For instance, the CI of the correlation coefficient reported in `r fig_nums("PP450",display="cite")` was equal to CI: [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`]. The width of this confidence interval is thus `r format(Rres50$conf.int[2]-Rres50$conf.int[1], digits = 2)`, which is pretty close to the median CI width when N=`r PopSize`. 
 ``` {r PlotCI, echo=FALSE, fig.cap=fig_nums("PP_CI")}
      PP_CI <- ggarrange(PPCI_50,PPCI_28,ncol = 2, nrow = 1,labels = c("A","B"))
@@ -720,7 +788,7 @@ Plot2B <- ggplot(Good2B5, aes(x=NSig)) +
                label.size = NA,
                size = 3,
                fill = NA)+
-    geom_histogram(binwidth=.05,boundary = 0.05,color="black") +
+    geom_histogram(binwidth=BinSize,boundary = 0.05,color="black") +
     coord_cartesian(xlim = c(0, 1))+
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
@@ -861,7 +929,7 @@ CountSigOut <- sum(resOut$Sig)
 PsigOut <- CountSigOut/length(resOut$Sig)
 resOut$Sig = factor(1-resOut$Sig)
 PP2Out <- ggplot(resOut, aes(x=p, fill=Sig)) + 
-    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
     geom_hline(yintercept=CountSigOut, linetype="dashed", color = "black") +
     geom_label(aes(x = 0, y = CountSigOut, label = "H0"), 
@@ -915,7 +983,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   fig_nums("PP3Out", paste("proportion of significant and non-significant p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
@@ -996,7 +1064,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   fig_nums("PP3Spear",paste("Ability of Spearman correlation to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
@@ -1065,7 +1133,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
     fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
@@ -1172,7 +1240,7 @@ PsigNDBC <- CountSigSubNDBC/length(resSub$NoDifButCorrel)
 
 resSub$Sig = factor(1-resSub$Sig)
 PP2Sub <- ggplot(resSub, aes(x=p, fill=Sig)) + 
-    geom_histogram(aes(x=p,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
+    geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
     geom_hline(yintercept=CountSigSub, linetype="dashed", color = "black") +
     geom_label(aes(x = 0, y = CountSigSub, label = "H0"), 
@@ -1225,7 +1293,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   
     fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
@@ -1309,7 +1377,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
       fig_nums("PP3SubSpear",paste("Inability of Spearman correlation to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
@@ -1380,7 +1448,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x=element_blank(),
+    theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   
   fig_nums("PP3Reg",paste("Ability of regression to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for standardized regression coefficient when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
