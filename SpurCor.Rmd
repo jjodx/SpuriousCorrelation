@@ -1,14 +1,14 @@
 ---
-title: Simulating correlations to get insights into statistics and their robustness to irregularities in the data
-  results
+title: Simulating correlations to get insights into statistics and their robustness
+  to irregularities in the data results
 author: "Jean-Jacques Orban de Xivry"
 date: "May 19, 2019"
 output:
+  html_document:
+    fig_caption: yes
   pdf_document:
     fig_caption: yes
   word_document:
-    fig_caption: yes
-  html_document:
     fig_caption: yes
 bibliography: StatLibrary.bib
 ---
@@ -46,7 +46,7 @@ Therefore, the goal of this paper is to show that simulation of artificial data 
 ```{r ParamDef, echo=FALSE}
 # defining default parameters
 PopSize=15 # size of the population/sample
-Nsim=10000 # number of simulated populations/samples. 100 to go fast / should be 10000
+Nsim=100 # number of simulated populations/samples. 100 to go fast / should be 10000
 Rval=0 # for simulating when there is no correlations between the measured parameters
 Rval50=0.5 # for generating correlated measured parameters within a population
 BinSize <- 0.01 # for histograms of p-values
@@ -87,7 +87,7 @@ kable(XY, caption = "randomly generated parameters for the individuals of the po
 ```
 
 These values are unitless. Some of them are positive other negative values.Now that we have generated data for height and working memory capacity for each individual, we can test the correlation between these two parameters. We wil first use the Pearson's correlation, which is used in most scientific studies.
-Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated parameters have a correlation coefficient R= `r format(R$r[1,2], digits = 2)` (CI: [`r format(Rres$conf.int[1], digits = 2)`, `r format(Rres$conf.int[2], digits = 2)`], p-value = `r format(R$P[1,2], digits = 2)`). Interstingly, while the two variables should be independent (height and working memory were generated randomly and independently), their correlation coefficient is not exactly zero. Yet, it is low (and non-significant), which means that we cannot conclude from this data that the variables height and working memory capacity are related in this population (and we cannot conclude that these are not correlated either).
+Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated parameters have a correlation coefficient R= `r format(R$r[1,2], digits = 2)` (CI: [`r format(Rres$conf.int[1], digits = 2)`, `r format(Rres$conf.int[2], digits = 2)`], p-value = `r format(R$P[1,2], digits = 2)`). Interstingly, while the two variables should be independent (height and working memory were generated randomly and independently), their correlation coefficient is not exactly zero. Yet, the value of the correlation coefficient is low (weak effect size) and the associated p-value informs us that observing such a correlation coefficient is not so unlikely under the hypothesis that there is no correlation (the null hypothesis). In other words, we cannot conclude from this data that the variables height and working memory capacity are related in this population (and we cannot conclude that these are not correlated either).
 ````{r plotR0, echo=FALSE, fig.cap= fig_nums("PP4")} 
 PP4
 ```
@@ -823,14 +823,18 @@ Nall28_10 = 100*Yall28_10/Nsim
 
 In contrast, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are too good to be true [@francis2014].
 
-## Understanding p-values: final assignments
+## Understanding p-values: summary and final assignments
+
+In this part, we started with the description of the p-value for a single correlation coefficient (Fisherian view). Then, we transitioned from one p-value to many p-values (N = `r Nsim`) in order to look at the distribution of p-values over multiple repetition of the same experiment (Neyman-Pearsonian view). Hopefully brought these many p-values insights into how p-values should be interpreted.
+
+It is important to understand that the studied problem here is well-defined. Indeed, in all simulations, we knew whether the two underlying variables were correlated or not. However, in science, the problem is often ill-defined. When a researcher performs a single experiment and get a p-value of 0.019, (s)he does not know whether this p-value corresponds to a true effect or to a false-positive correlation. This can only be determined at the end of several experiments albeit not all necessarily significant. As such, this suggests that we need a set of well-powered experiments in order to make a statement about the veracity of an effect. In other words, making statements about effect is only possible if we get away from the law of small numbers [@tversky1971]. In other words, we need large sample and several experiments.
 
 I have describe p-values distribution when there is an effect (R=0.5) or when there isn't (R=0). Now, let's test whether the attentive readers can solve the following problem [@gigerenzer2018]:
 Consider a simple example: A researcher designs an experiment with 50% power to detect an effect of a medium size  and obtains a significant difference between means, p < .05. How likely is this ressearcher to replicate this effect in a second experiment with the same sample size (1) if there is an effect or (2) if there is no effect.
 
 *If the alternative hypothesis is true, then the probability of getting another significant result equals the statistical power of the test, that is, 50%. If, however, the null hypothesis is true, the probability of getting another significant result would still be only 5%.*
 
-You read two papers, each reporting three preregistered analyses. Which effect is more likely to replicate?
+You read two papers, each reporting three preregistered analyses. Which effect seems more reliable?
 A: p=0.024, p=0.034 and p=0.031
 B: p=0.25, p=0.032 and p=0.0001
 source: https://twitter.com/EJWagenmakers/status/889987997046910978
