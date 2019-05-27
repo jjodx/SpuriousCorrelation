@@ -930,7 +930,7 @@ PP2Out <- ggplot(resOut, aes(x=p, fill=Sig)) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
-fig_nums("PP2Out", paste("distribution of p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
+# fig_nums("PP2Out", paste("distribution of p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
 
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1), t=c('a','b'))
   PP3Out <- ggplot() +  
@@ -972,17 +972,14 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
-  fig_nums("PP3Out", paste("proportion of significant and non-significant p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
+  PP2and3Out <- ggarrange(PP2Out,PP3Out,ncol = 2, nrow = 1,labels = c("A","B"))
+  fig_nums("PP2and3Out", paste("Distribution of p-values (panel A) and proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values (as in `r fig_nums("PP2",display="cite")`). In addition, only 5% of the simulated correlations should be significant (false-positive rate). `r fig_nums("PP2Out",display="cite")` illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=0)` % significant p-values (`r fig_nums("PP3Out",display="cite")`)!
+We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values (as in `r fig_nums("PP2",display="cite")`). In addition, only 5% of the simulated correlations should be significant (false-positive rate). Left panel of `r fig_nums("PP2and3Out",display="cite")` illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=0)` % significant p-values (right panel of `r fig_nums("PP2and3Out",display="cite")`)!
 
-``` {r PlotDistriP_outlier, echo=FALSE, fig.cap=fig_nums("PP2Out")}
-PP2Out
-```
-
-``` {r PlotProportionP_outlier, echo=FALSE, fig.cap=fig_nums("PP3Out")}
-PP3Out
+``` {r PlotDistriP_outlier, echo=FALSE, fig.cap=fig_nums("PP2and3Out")}
+PP2and3Out
 ```
 
 The interesting reader can use the Shiny App or the R code to explore the influnce of population size and the distance of the outlier from the mean on the increase in number of false-positive correlations caused by the outlier. Off course, this is also reflected in the value of the average correlation coefficient.
@@ -1243,7 +1240,7 @@ PP2Sub <- ggplot(resSub, aes(x=p, fill=Sig)) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
-  fig_nums("PP2Sub",paste("distribution of p-values when the simulated correlations are biased by subgroup differences. Here, the subgroups are ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+  # fig_nums("PP2Sub",paste("distribution of p-values when the simulated correlations are biased by subgroup differences. Here, the subgroups are ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1), t=c('a','b'))
   PP3Sub <- ggplot() +  
@@ -1284,17 +1281,14 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
-  
-    fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+  PP2and3Sub <- ggarrange(PP2Sub,PP3Sub,ncol = 2, nrow = 1,labels = c("A","B"))
+  fig_nums("PP2and3Sub", paste("Influence of subgroup differences on the distribution of p-values (panel A) and on the proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and sample size N= ", PopSize),display=FALSE)
+    # fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
-In this graph, we observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulations allows us to understand the effect of subgroups on the number of false-positive correlations. `r fig_nums("PP2Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=0)` % significant p-values (`r fig_nums("PP3Sub",display="cite")`), which is far above the expected 5% threshold. 
+In this graph, we observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulations allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=0)` % significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold. 
 
-``` {r PlotDistriP_subgroups, echo=FALSE,fig.cap=fig_nums("PP2Sub")}
-PP2Sub
-```
-
-``` {r PlotProportionP_subgroups, echo=FALSE,fig.cap=fig_nums("PP3Sub")}  
-PP3Sub
+``` {r PlotDistriP_subgroups, echo=FALSE,fig.cap=fig_nums("PP2and3Sub")}
+PP2and3Sub
 ```
 
 Note that for `r format(PsigNDBC*100, digit=0)`% of these significant correlations, the between groups difference was not significant. Yet, these subgroups yielded a positive correlation.
