@@ -1121,7 +1121,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
     fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-In contrast, the use of winsorized correlation ([@pernet2013]) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by `r fig_nums("PP3Rob",display="cite")`, which shows that the influence of the outlier is eliminated and the type I error rate (= `r PsigRob`) is very close to the 5% level. In R, this correlation is available in the $WRS2$ package.
+In contrast, the use of winsorized correlation ([@pernet2013]) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by `r fig_nums("PP3Rob",display="cite")`, which shows that the influence of the outlier is eliminated and that the type I error rate (= `r PsigRob`) is very close to the 5% level. In R, this correlation is available in the $WRS2$ package.
 
 ``` {r PlotRobOutlier, echo=FALSE, fig.cap=fig_nums("PP3Rob")}
 PP3Rob
