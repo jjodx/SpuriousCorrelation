@@ -5,11 +5,11 @@ subtitle: Simulating correlations to get insights into statistics and their robu
 author: "Jean-Jacques Orban de Xivry"
 date: "May 28, 2019"
 output:
-  html_document:
+  word_document:
     fig_caption: yes
   pdf_document:
     fig_caption: yes
-  word_document:
+  html_document:
     fig_caption: yes
 bibliography: StatLibrary.bib
 ---
