@@ -1,8 +1,9 @@
 ---
-title: Simulating correlations to get insights into statistics and their robustness
+title: Simulate to stimulate statistical thinking
+subtitle: Simulating correlations to get insights into statistics and their robustness
   to irregularities in the data results
 author: "Jean-Jacques Orban de Xivry"
-date: "May 19, 2019"
+date: "May 28, 2019"
 output:
   html_document:
     fig_caption: yes
@@ -27,10 +28,6 @@ library(ggpubr) # for ggarrange
 fig_nums <- captioner()
 ```
 
-# To do 
-
-17. text subgroups
-
 # Introduction
 
 Statistical significance and the concept of p-values are at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values [@szucs2017], should we use a more severe significance threshold [@benjamin2018], an adapted one [@lakens2018] or remove it entirely [@amrhein2018a]? These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used [@colquhoun2014; @gagnier2017a; @greenland2016]. A p-value can be defined as follows: "*the P value can be viewed as a continuous measure of the compatibility between the data and the entire model used to compute it, ranging from 0 for complete incompatibility to 1 for perfect compatibility*" [@greenland2016] or "*p-value is the probability that the data would be equal to or more extreme than what would be expected by chance.*". Yet, such definition does not provide a lot of insights for most people on how p-values behave in different circumstances. Here, we use our ability to generate random samples of different populations as a tool to get insights into p-values [@colquhoun2014; @martins2018; @ohara2019; @tintle2015]. These simulations of randomly correlated or uncorrelated variables are done with correlations as the statistical test of interest. These simulations highlight and many problems that have been discussed in meta-science (the science of science). This part adresses the significance problem linked to p-values.
@@ -50,7 +47,7 @@ Therefore, the goal of this paper is to show that simulation of artificial data 
 ```{r ParamDef, echo=FALSE}
 # defining default parameters
 PopSize=15 # size of the population/sample
-Nsim=100 # number of simulated populations/samples. 100 to go fast / should be 10000
+Nsim=10000 # number of simulated populations/samples. 100 to go fast / should be 10000
 Rval=0 # for simulating when there is no correlations between the measured parameters
 Rval50=0.5 # for generating correlated measured parameters within a population
 BinSize <- 0.01 # for histograms of p-values
@@ -1121,16 +1118,16 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
     fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-In contrast, the use of winsorized correlation ([@pernet2013]) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by `r fig_nums("PP3Rob",display="cite")`, which shows that the influence of the outlier is eliminated and that the type I error rate (= `r PsigRob`) is very close to the 5% level. In R, this correlation is available in the $WRS2$ package.
+In contrast, the use of winsorized correlation ([@pernet2013]) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by `r fig_nums("PP3Rob",display="cite")`, which shows that the influence of the outlier is eliminated and that the type I error rate (= `r PsigRob`) is very close to the 5% level. In R, this correlation is available in the $WRS2$ package [@mair2018].
 
 ``` {r PlotRobOutlier, echo=FALSE, fig.cap=fig_nums("PP3Rob")}
 PP3Rob
 ```
 
 
-## influence of subgroups on correlation: simulation and solution
+## the subgroup problem: simulation and solution
 
-Researchers want to estimate correlation across different subgroups.For instance, in my own research, I wanted to correlate the amount of explicit motor learning with working memory capacity across both young and old participants [@vandevoorde2019]. Yet, working memory capacity is known to decline with aging and so is the explicit component of motor learning. This does not mean that these two variables should be correlated across participants. The goal of this section is to investigate the influence of subgroups on correlations because many researchers compute correlations on the pooled data.
+Researchers often want to estimate correlation across different subgroups. For instance, in my own research, I wanted to correlate the amount of explicit motor learning with working memory capacity across both young and old participants [@vandevoorde2019]. Yet, working memory capacity is known to decline with aging and so is the explicit component of motor learning [@vandevoorde2019]. Yet, this does not mean that these two variables are correlated across participants. The goal of this section is to investigate the influence of subgroups on correlations because many researchers compute correlations on the pooled data. Yet correlations on heterogeneous subgroups are problematic [@hadzi-pavlovic2007; @hassler2003; @sockloff1975].
 
 ### How sensisitive are correlations to subgroups?
 
@@ -1159,7 +1156,7 @@ SubG4 <- ggplot(Scatter1) +
   fig_nums("SubG4",paste("Example of correlation biased by differences between subgroups", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-To generate subgroups, we first generate the x and y parameters for the `r PopSize` individuals. We will then split the population into two subgroups and add a value of `r SDdistSub` to the values of both parameters for one of the two subgroups. This produces a scatterplot such as the one presented on `r fig_nums("SubG4",display="cite")`.
+To generate subgroups, we first generate the x and y parameters for the `r PopSize` individuals from two uncorrelated variables (R=`Rval`). We will then split the population into two subgroups and add a value of `r SDdistSub` to the values of both parameters for one of the two subgroups. This produces a scatterplot such as the one presented on `r fig_nums("SubG4",display="cite")`.
 
 ``` {r PlotExampleSubgroup, echo=FALSE, fig.cap=fig_nums("SubG4")}
 SubG4
@@ -1283,21 +1280,25 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
   fig_nums("PP2and3Sub", paste("Influence of subgroup differences on the distribution of p-values (panel A) and on the proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and sample size N= ", PopSize),display=FALSE)
     # fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
-In this graph, we observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulations allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=0)` % significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold. 
+In this graph, we observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulation (`r Nsim` times) allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=0)` % significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold.
+
+__*Assignment:*__
+*The interested reader can test the effect of the distance between the two groups (in SD) on the percentage of false-positive correlations. Sample size also influences this percentage*
 
 ``` {r PlotDistriP_subgroups, echo=FALSE,fig.cap=fig_nums("PP2and3Sub")}
 PP2and3Sub
 ```
 
-Note that for `r format(PsigNDBC*100, digit=0)`% of these significant correlations, the between groups difference was not significant. Yet, these subgroups yielded a positive correlation.
+Note that for `r format(PsigNDBC*100, digit=0)`% of these significant correlations, the between-groups difference for the x and y parameters was not significant. Yet, these subgroups yielded a positive correlation.
 
-In addition, the bigger the groups get, the smaller the difference between the subgroups must be to give rise to a significant correlation. For instance, for a sample of `r PopSize`, a difference of `r SDdistSub75` standard deviation between group does not inflate the type I error rate (`r format(PsigSub75_15*100, digits=0)`% of correlations are significant). However, this difference becomes important for larger populations. For instance, a difference of `r SDdistSub75` increase the type I error rate to `r PsigSub75` and this number increases with sample size.
+In addition, the bigger the groups get, the smaller the difference between the subgroups must be to give rise to a significant correlation. For instance, for a sample of `r PopSize`, a difference of `r SDdistSub75` SD between group merely inflates the number of false-positive correlations (`r format(PsigSub75_15*100, digits=1)`% of correlations are significant). However, this difference becomes important for larger populations. For instance, a difference of `r SDdistSub75` SD between subgroups increase the type I error rate to `r format(PsigSub75*100, digits=1)` and this number increases with sample size.
 
-it is self-evident that these subgroups will also affect the magnitude of the false-positive correlations, which will tend to be larger because of the subgroups. This can easily be visualized with the ShinyApp. 
+__*Assignment:*__
+*The mean difference between the subgroups and their size also affect the magnitude of the false-positive correlations, which will tend to be larger because of the subgroups.* 
 
 ### Solution to the subgroup problem
 
-We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take 
+We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take the subgroups into account in a regression model in order to bring the percentage of false-positive correlations back to 5% (which is expected given that the two underlying variables are uncorrelated, R=`r Rval`)
 
 ### Spearmann is not a solution
 
@@ -1362,6 +1363,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
           axis.ticks.x=element_blank())
       fig_nums("PP3SubSpear",paste("Inability of Spearman correlation to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
+
+A first solution might be to use a non-parametric rank correlation such as Spearman (non-parametric version of the Pearson correlation). `r fig_nums("PP3SubSpear",display="cite")` shows that the influence of subgroups is not eliminated as the false-positive error rate (`r format(PsigSubSpear*100,digits=0)`%) remains larger than the expected 5% level when the underlying variables are not correlated.
 
 ``` {r PlotProportionSpear_subgroups, echo=FALSE,fig.cap=fig_nums("PP3SubSpear")}
   PP3SubSpear
@@ -1463,17 +1466,17 @@ PP1Reg <- ggplot(resReg, aes(x=R, fill=Sig)) +
 fig_nums("PP1Reg", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-When correlating parameters across different subgroups, one has to take them into account. This can be done by means of regression. In a simple linear regression $ y = a*x + b $, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized. To z-normalize a variable, one needs to substract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero> To take subgroups into account, one needs to modify the regression question as follow:
+In order to correlate parameters across different subgroups, one has to take these subgroups into account. This can be done by means of regression. In a simple linear regression $y = a*x + b$, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized. To z-normalize a variable, one needs to substract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero. To take subgroups into account, one needs to modify the regression equation as follow:
 $$
 y = a*x + c*G
 $$ 
-where $G$ is equal to zero for one subgroup and one for the other. This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. 
+where $G$ is equal to zero for one subgroup and to one for the other. This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. As shown on `r fig_nums("PP3Reg",display="cite")`, including a term in the regression coefficient is able to reduce the false-positive rate to the 5% level and should therefore be used when data from heterogeneous subgroups are pooled for correlations.
 
 ``` {r PlotProportionReg_subgroups, echo=FALSE, fig.cap=fig_nums("PP3Reg")}
 PP3Reg
 ```
 
-Estimation of correlation coefficients in the presence of two subgroups looks different than when there are no subgroups. 
+In the absence of subgroups, false-positive correlations had the more extreme values in the distribution of correlations coefficient (see `r fig_nums("PP1",display="cite")`). Yet, this is no more the case when we correct for subgroups (`r fig_nums("PP1Reg",display="cite")`). Indeed, correcting for subgroups renders some extreme correlations not significant and less extreme correlations significant. Therefore, the correction for the existence of subgroups has an effect on the value of the false-positive correlations. 
 
 ``` {r PlotDistriR0_Reg_subgroups, echo=FALSE, fig.cap=fig_nums("PP1Reg")}
 PP1Reg
@@ -1531,26 +1534,26 @@ PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) +
     labs(title="",x="correlation coefficient" , y="Count")
 fig_nums("PP1Reg50", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
-Taking subgroups into account does not prevent us from detecting correlations when they are present. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (R=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (R=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on the graph below).
+Taking subgroups into account does not prevent us from detecting correlations when they are present. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (R=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (R=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on `r fig_nums("PP1Reg50",display="cite")`). It is important to note that the transition from significant to non-significant correlations presented on `r fig_nums("PP1Reg50",display="cite")`) is again more blurred than the ones shown on both panels of `r fig_nums("PP15vs28",display="cite")`. 
 
 ``` {r PlotDistriR50_Reg_subgroups, echo=FALSE, fig.cap=fig_nums("PP1Reg50")}
 PP1Reg50
 ```
 
 # What have we learned?
-Simulations can be  useful to get insights on statistics.
+Simulations stimulate statistical thinking and yield important insights on statistics.
 
-1) The distribution of p-value under no correlation is flat . Same probability of observing p<0.05 than p>0.95 [@benjamini1995controlling].
+1) The distribution of p-value under no correlation is flat. The probability of observing p<0.05 is identical to the probability of observing p>0.95 [@benjamini1995controlling].
 
 2) Even in the presence of an effect, some p-values can be non-significant [@lakens2017a]. 
 
 3) In the presence of an effect, proportion of significant p-values provide information about power. In the absence of an effect, it represents the number of false positives.
 
-4) Publication bias is bad for effect size estimation [@nissen2016; @sutton2000].
+4) Publication bias is bad for effect size estimation [@nissen2016; @sutton2000]. Both significant and non-significant effects are critical to estimate the actual effect size.
 
-5) When power is low, the overestimation of effect size is large, the with of the CI of the indivdiual correlation coefficient, the uncertainty of around the correlation coefficient is large, the effect of irregularities in the data (outliers or subgroups) is also prominent [@button2013].
+5) When power is low, the overestimation of effect size because of publication bias is large, the with of the CI of the indivdiual correlation coefficient is large, the uncertainty of around the correlation coefficient is large, the effect of irregularities in the data (outliers or subgroups) is also prominent [@button2013].
 
-6) Increasing the sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient.
+6) Increasing the sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient (width of CI decreases).
 
 7) Getting significant p-values is not difficult, one just needs to try enough different statistical tests [@bennett2011]. 
 
@@ -1558,7 +1561,7 @@ Simulations can be  useful to get insights on statistics.
 
 9) Simulations can be useful to test potential solution to encountered problems. For instance, the simulations clearly demonstrated that winsorised but not Spearman correlations can handle outliers [@pernet2013; @rousselet2012a].
 
-This paper represents an introduction to the use of simulations to understand the concept of p-values, power and to test solutions to irregularities in the data. Yet, more advanced use of simulations are also possible. For instance, simulations can be used to demonstrate how you should decide which covariates to adjust for in the context of a randomized controlled trial (https://twitter.com/statsepi/status/1115902270888128514).
+This paper represents an introduction to the use of simulations to understand the concept of p-values, power and to test solutions to irregularities in the data. Yet, more advanced use of simulations is also possible. For instance, simulations can be used to demonstrate how you should decide which covariates to adjust for in the context of a randomized controlled trial (https://twitter.com/statsepi/status/1115902270888128514).
 
 # References
 
