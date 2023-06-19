@@ -1,7 +1,6 @@
 ---
 title: Simulate to stimulate statistical thinking
-subtitle: Simulating correlations to get insights into statistics and their robustness
-  to irregularities in the data results
+subtitle: simulating p-values and their robustness to irregularities in the data
 author: "Jean-Jacques Orban de Xivry"
 date: "May 28, 2019"
 output:
@@ -30,13 +29,15 @@ fig_nums <- captioner()
 
 # Introduction
 
-Statistical significance and the concept of p-values are at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values [@szucs2017], should we use a more severe significance threshold [@benjamin2018], an adapted one [@lakens2018] or remove it entirely [@amrhein2018a]? These questions are often hotly debated in scientific papers or on social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances under which a p-value can be used [@colquhoun2014; @gagnier2017a; @greenland2016]. A p-value can be defined as follows: "*the P value can be viewed as a continuous measure of the compatibility between the data and the entire model used to compute it, ranging from 0 for complete incompatibility to 1 for perfect compatibility*" [@greenland2016] or "*p-value is the probability that the data would be equal to or more extreme than what would be expected by chance.*". Yet, such definition does not provide a lot of insights for most people on how p-values behave in different circumstances. Here, we use our ability to generate random samples of different populations as a tool to get insights into p-values [@colquhoun2014; @martins2018; @ohara2019; @tintle2015]. These simulations of randomly correlated or uncorrelated variables are done with correlations as the statistical test of interest. These simulations highlight and many problems that have been discussed in meta-science (the science of science). This part adresses the significance problem linked to p-values.
+Statistical significance and the concept of p-values are at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values [@szucs2017], should we use a more severe significance threshold [@benjamin2018], an adapted one [@lakens2018] or remove it entirely [@amrhein2018a]? These questions are often hotly debated in scientific papers and social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances of when to use a p-value [@colquhoun2014; @gagnier2017a; @greenland2016]. A p-value can be defined as follows: "*the P value can be viewed as a continuous measure of the compatibility between the data and the entire model used to compute it, ranging from 0 for complete incompatibility to 1 for perfect compatibility*" [@greenland2016] or "*p-value is the probability that the data would be equal to or more extreme than what would be expected by chance.*". Yet, such definition does not provide a lot of insights for most people on how p-values behave in different circumstances. Here, we use our ability to generate random samples of different populations as a tool to get insights into p-values [@colquhoun2014; @martins2018; @ohara2019; @tintle2015]. These simulations of randomly correlated or uncorrelated variables are done with correlations as the statistical test of interest. These simulations highlight the many problems that have been discussed in meta-science (the science of science). 
 
+``` {r}
+# $$This part adresses the significance problem linked to p-values.\
+```
 
+P-values on their own have very little value if they are not coupled to the effect size of an effect [@hubbard2008]. Indeed, while we sometimes want to know whether a relationship exist between two variables (e.g. air pollution and respiratory disease), we often also want to know the importance of this link. Does hair pollution explains 0.1 or 25% of respiratory disease incidence. The ability to estimate the importance of such relationship is referred to as the estimation problem. Estimation is important not for distinguishing between two theories but to assess the magnitude of the relationship [@sullivan2012]. The estimation problem is made complicated by publication bias [@joober2012; @mlinaric2017; @song2013]. That is, people rarely published a non-significant effect but readily publish significant effects. To address this issue, here I will use simulation to understand how publication bias threatens the estimation of effect size magnitude.
 
-But p-values on their own have very little value if they are not coupled to the effect size of an effect [@hubbard2008]. Indeed, while we sommetimes want to know whether a relationship exist between two variables (e.g. air pollution and respiratory disease), we often also want to know the importance of this link. Does hair pollution explains 0.1 or 25% of respiratory disease incidence. The ability to estimate the importance of such relationship is referred to as the estimation problem. Estimation is important not for distinguishing between two theories but to assess the magnitude of the relationship [@sullivan2012]. The estimation problem is made complicated by publication bias [@joober2012; @mlinaric2017; @song2013]. That is, people do not cherish not significant effect and rarely published them while significant effects are published very easily. We will thus use simulation to understand how publication bias is a threat for the estimation of the magnitude of the effect size.
-
-This publication bias is also linked to the presentation of results that are too good to be true [@francis2013a]. Simulation of artificial data can also provide us with information about the type of results that should be expected [@lakens2017a]. That is, if two variables are correlated and we run three times the same experiment, how many significant p-values do you expect? Note that tackling this question will tell what the expected patterns of p-values are in the presence of an effect. 
+This publication bias is also linked to the presentation of results that are too good to be true [@francis2013a]. Simulation of artificial data can also provide us with information about the type of results that one could expect [@lakens2017a]. That is, if two variables are correlated and we run three times the same experiment, how many significant p-values do you expect? Note that tackling this question will tell what the expected patterns of p-values are in the presence of an effect. 
 
 The simulations and corresponding p-values reported in this paper were based on the correlation between two variables. Correlation was chosen as an example of statistical test because it is very frequently used in scientific papers. The correlation coefficient represents the strength of the association between two variables [@leerodgers1988; @taylor1990]. While the correlation coefficient has been deemed to be robust against violations of the assumptions [@havlicek1976], we now know that it is at least extremely sensitive to outliers [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]. That is, as we will see below, a slight irregularity in the data is sufficient to obtain significant but spurious correlations.
 
@@ -54,10 +55,9 @@ BinSize <- 0.01 # for histograms of p-values
 ```
 
 Let's imagine the following experiment. Researchers from Klow in Syldavia are willing to measure height and working memory capacity in a population of young healthy participants. Because of their limited budget, they are able to measure these parameters in a population of `r PopSize`  participants. For each individual participant $i$, they have two observations: $(x_i,y_i)$ where $x_i$ is the height of the participant and $y_i$ is his/her working memory capacity. Then, the researchers decided to test the correlation between these two variables for their population.
-There is no reason whatsoever to expect a correlation between height and working memory capacity. This should be zero. 
-We can simulate this experiment numerically by generating `r PopSize` random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated height of each participant and `r PopSize` different random numbers with mean of 0 and standard deviation of 1 corresponding to the simulated working memory capacity of each participant. A mean of 0 and a standard deviation of 1 were chosen for simplicity but all the arguments below hold if ones picks another mean and/or another standard deviation. By doing this, we have generated `r PopSize` pairs of height and working memory capacity (the measured parameters). To follow the idea of our Syldavian researchers, we can then compute the correlation between height and working memory capacity of our randomly generated parameters across the population of `r PopSize` individuals.
+There is no reason whatsoever to expect a correlation between height and working memory capacity. That is, we would expect this correlation to be equal to zero. We can simulate this experiment numerically by generating `r PopSize` random numbers corresponding to the simulated height of each participant and `r PopSize` different random numbers corresponding to the simulated working memory capacity of each participant. For simulations of each `r PopSize` random numbers, a mean of 0 and a standard deviation of 1 were chosen for simplicity but all the arguments below hold if one picks another mean and/or another standard deviation. By doing this, we have generated `r PopSize` pairs of height and working memory capacity (the measured parameters). To follow the idea of our Syldavian researchers, we can then compute the correlation between height and working memory capacity of our randomly generated parameters across the population of `r PopSize` individuals.
 
-## simulating a single correlation between two randomly generated samples
+## Simulating a single correlation between two randomly generated samples
 
 In summary, to generate two independent variables (with zero correlations), we will apply the following algorithm:
 1. Pick randomly a number from a Gaussian distribution (mean = 0 and standard deviation =1) and assign this number to the height of this participant ($x_i$)
@@ -88,18 +88,18 @@ kable(XY, caption = "randomly generated parameters for the individuals of the po
 ```
 
 These values are unitless. Some of them are positive other negative values.Now that we have generated data for height and working memory capacity for each individual, we can test the correlation between these two parameters. We wil first use the Pearson's correlation, which is used in most scientific studies.
-Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated parameters have a correlation coefficient R= `r format(R$r[1,2], digits = 2)` (CI: [`r format(Rres$conf.int[1], digits = 2)`, `r format(Rres$conf.int[2], digits = 2)`], p-value = `r format(R$P[1,2], digits = 2)`). Interstingly, while the two variables should be independent (height and working memory were generated randomly and independently), their correlation coefficient is not exactly zero. Yet, the value of the correlation coefficient is low (weak effect size) and the associated p-value informs us that observing such a correlation coefficient is not so unlikely under the hypothesis that there is no correlation (the null hypothesis). In other words, we cannot conclude from this data that the variables height and working memory capacity are related in this population (and we cannot conclude that these are not correlated either).
+Off course, one should not expect any correlation between height and working memory capacity as these are sampled from random independent distributions. The two randomly generated parameters have a correlation coefficient r= `r format(R$r[1,2], digits = 2)` (CI: [`r format(Rres$conf.int[1], digits = 2)`, `r format(Rres$conf.int[2], digits = 2)`], p-value = `r format(R$P[1,2], digits = 2)`). Interestingly, despite the two variables should be independent (height and working memory were generated randomly and independently), their correlation coefficient is not exactly zero. Yet, the value of the correlation coefficient is low (weak effect size) and the associated p-value informs us that observing such a correlation coefficient is not so unlikely under the hypothesis that there is no correlation (the null hypothesis). In other words, we cannot conclude from this data that the variables of height and working memory capacity are related in this population. Nor can we conclude that these are not correlated.
 ```{r plotR0, echo=FALSE, fig.cap= fig_nums("PP4")} 
 PP4
 ```
 
-Now, this is the data from a single city. Let's now simulate what would happen if the same correlation was computed for `r Nsim` different towns with enough inhabitants. In this case, we should repeat the process `r Nsim` times in order to know whether the result obtained for `r fig_nums("PP4", display = "cite")` is a special case or not. That is, for every simulated city (N=`r Nsim`), we will generate random numbers for the two parameters (height and working memory capacity). We will then obtain the size (correlation coefficient) and significance (p-value) of the correlation between these parameters for every one of the `r Nsim` towns.
+Now, this is the data from a single city. Let's now simulate what would happen if the same correlation was computed for `r format(Nsim, scientific=FALSE)` different towns with enough inhabitants. In this case, we should repeat the process `r format(Nsim, scientific=FALSE)` times to know whether the result obtained for `r fig_nums("PP4", display = "cite")` is a special case or not. That is, for every simulated city (N=`r format(Nsim, scientific=FALSE)`), we will generate random numbers for the two parameters (height and working memory capacity). We will then obtain the size (correlation coefficient) and significance (p-value) of the correlation between these parameters for every one of the `r format(Nsim, scientific=FALSE)` towns.
 
-## simulating multiple correlation between two randomly generated parameters
+## Simulating multiple correlation between two randomly generated parameters
 
 Being able to perform these simulations in any programming language has certainly a large added value as we will show below. Therefore, we encourage the interested reader to use the code below to perform these simulations in R. For the readers who do not have the time or the willingness to do so, they can use the web application developed for this paper (See ShinyApp section below).
 
-### doing that in R
+### Doing that in R
 
 Simmulating randomly generated parameters for a given number of participants can be done in $R$ with the $mvrnorm$ function from the $MASS$ package. To draw `r PopSize` samples from a normal distribution, we can do
 ``` {r eval=FALSE}
@@ -119,14 +119,14 @@ R$r[1,2]
 # display corresponding p-values
 R$P[1,2]
 ```
-We will then repeat this process `r Nsim` times to obtain a reliable distribution of the p-values. To do so, we will use the ability of the mvnorm function to simultaneously generate random values for the x and y uncorrelated variables. This can be done on the basis of the covariance matrix Sigma:
+We will then repeat this process `r format(Nsim, scientific=FALSE)` times to obtain a reliable distribution of the p-values. To do so, we will use the ability of the mvnorm function to simultaneously generate random values for the x and y uncorrelated variables. This can be done on the basis of the covariance matrix Sigma:
 $$
 Sigma = \begin{pmatrix}
 1 & 0\\
 0 & 1
 \end{pmatrix}
 $$
-where the off-diagonal element of the covariance matrix indicate the theoretical value of the correlation between the variables x and y (Here, R=`r Rval`). Using this covariance matrix, we will use the $mvnorm$ function to build two uncorrelated variables at the same time. This is repeated `r Nsim`  times (Nsim= `r Nsim`) in the code below:
+where the off-diagonal element of the covariance matrix indicate the theoretical value of the correlation between the variables x and y (Here, r=`r Rval`). Using this covariance matrix, we will use the $mvnorm$ function to build two uncorrelated variables at the same time. This is repeated `r format(Nsim, scientific=FALSE)`  times (Nsim= `r format(Nsim, scientific=FALSE)`) in the code below:
 
 ``` {r eval=FALSE}
 library(Hmisc) # for rcorr
@@ -158,7 +158,7 @@ ggplot(res, aes(x=p, fill=Sig)) +
   scale_fill_manual(values = Fcolor)
 ```
 
-### using the ShinyApp
+### Using the ShinyApp
 
 For the readers that are not (yet) familiar with the R language, one can simply follow the following steps to be able to interactively follow this tutorial:
 
@@ -259,7 +259,7 @@ PP3_0
 ```
 In the absence of correlation between the underlying variables, the significant p-values are referred to as false-positive. We expect 5% of such correlations for a type I error threshold (aka the infamous significance threshold) of 0.05 (red horizontal dashed line in `r fig_nums("PP3_0", display = "cite")`).
 
-### understanding the influence of sample size (and power) on the magnitude of the false-positive correlations
+### Understanding the influence of sample size (and power) on the magnitude of the false-positive correlations
 
 ``` {r DistriRunderR0, echo=FALSE}
   Rsig <- mean(res$R[res$Sig==0])
@@ -288,7 +288,7 @@ PP1 <- ggplot(res, aes(x=R, fill=Sig)) +
     theme(legend.position='none') +
     scale_y_continuous(expand = c(0.15,0)) +
     labs(title="",x="correlation coefficient" , y="Count")
-fig_nums("PP1", paste("distribution of the correlations coefficient when R=", Rval, "and N=", PopSize),display=FALSE)
+fig_nums("PP1", paste("distribution of the correlations coefficient when r=", Rval, "and N=", PopSize),display=FALSE)
 ```
 The distribution of the correlation coefficient will allow us to understand the problem with small sample size and why significant results always look convincing with small sample size. In `r fig_nums("PP1", display = "cite")`, one can see that the simulated correlations with `r PopSize` samples span a range between `r format(min(res$R),digits=2)` and `r format(max(res$R),digits=2)`. However, only extreme correlations (in orange on `r fig_nums("PP1", display = "cite")`) are significant. That is, with small sample size (here `r PopSize` observations for each variable), the false-positive correlations are large (absolute value > `r format(min(abs(res$R[res$Sig==0])), digits=2)`).
 
@@ -350,12 +350,12 @@ I have insisted on the fact that the high false-positive correlations described 
 PP175
 ```
 
-The small number fallacy has important consequences for the publishability of findings. If two researchers are (unknowingly) reporting a false-positive correlation with N=`r PopSize` and R=0.7 for researcher A and with N=`r PopSize75` and R=0.4 for researcher B, which one will more easily publish in a high-impact journal (whatever that means...)? Therefore, any scientist should be warry on exploratory correlations with low N.
+The small number fallacy has important consequences for the publishability of findings. If two researchers are (unknowingly) reporting a false-positive correlation with N=`r PopSize` and r=0.7 for researcher A and with N=`r PopSize75` and r=0.4 for researcher B, which one will more easily publish in a high-impact journal (whatever that means...)? Therefore, any scientist should be warry on exploratory correlations with low N.
 
 __*Assignment:*__
 *How big needs the population size to be to have all false positive correlations with a smaller than medium effect size (r=0.3)?*
 
-### understanding the multiple comparison problem.
+### Understanding the multiple comparison problem.
 
 ``` {r MultComp, echo=FALSE}
 Index <- c(1:Nsim)
@@ -365,7 +365,7 @@ DifSig <- SigIndex - c(1,SigIndex[1:length(SigIndex)-1])+1
 
 ```
 
-These simulations also show that if we keep generating random parameters, we are assured of getting at least one significant correlation. With `r Nsim` simulations, there is 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(mean(DifSig),digits=1)` trials. That is, if one keeps testing the significance of correlation between different parameters, (s)he is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon [@bennett2011].
+These simulations also show that if we keep generating random parameters, we are assured of getting at least one significant correlation. With `r format(Nsim, scientific=FALSE)` simulations, there is 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(mean(DifSig),digits=1)` trials. That is, if one keeps testing the significance of correlation between different parameters, (s)he is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon [@bennett2011].
 
 This illustrates that if someone keeps trying to test correlation between many possible variables, the probability of getting a significant correlation is 100% even if there should be no correlation.
 
@@ -376,11 +376,11 @@ __*Assignment:*__
 Rval50 = 0.5
 ```
 
-## simulating a single correlation R=`r Rval50`
+## Simulating a single correlation r=`r Rval50`
 
-It is also interesting to simulate cases where the correlation is not zero. While simulating correlations with R=0 thaught us about false-positive correlations (type I error), the importance of sample size and the multiple comparison problem, simulating corelation with $R\ne0$ can teach us about power (and type II error), the precision of estimation and the consequences of publishing only significant studies.
+It is also interesting to simulate cases where the correlation is not zero. While simulating correlations with r=0 thaught us about false-positive correlations (type I error), the importance of sample size and the multiple comparison problem, simulating corelation with $R\ne0$ can teach us about power (and type II error), the precision of estimation and the consequences of publishing only significant studies.
 
-To simulate two parameters with a given correlation, one can use the $mvnorm$ function but this time with a covariance matrix exhibiting the value of the simulated correlation on the off-diagonal elements. For instance, if we want to simulate two variables with a correlation of R=`r Rval50`, then the covariance matrix is:
+To simulate two parameters with a given correlation, one can use the $mvnorm$ function but this time with a covariance matrix exhibiting the value of the simulated correlation on the off-diagonal elements. For instance, if we want to simulate two variables with a correlation of r=`r Rval50`, then the covariance matrix is:
 $$
 Sigma = \begin{pmatrix}
 1 & `r Rval50`\\
@@ -418,11 +418,11 @@ The generated values for the two parameters can be seen in the table below. One 
 ```{r plotCorrelR50, echo=FALSE, fig.cap=fig_nums("PP450")}
 PP450
 ```
-Together, these two parameters measured in `r PopSize` individuals are correlated with a correlation coefficient R= `r format(R$r[1,2], digits = 3)` (CI: [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`], p-value = `r format(R$P[1,2], digits=3)`). That is, the correlation between the two parameters (height and weight) is not exactly equal to the simulated value (R= `r Rval50`). We will see later how we can recover the actual simulated correlation. This is reminiscent of when we generated uncorrelated parameters (`r fig_nums("PP4", display = "cite")`). Even though there was no correlation in the underlying variables (height and working memory capacity), the correlations that we found were not exactly zero but approximately zero.
+Together, these two parameters measured in `r PopSize` individuals are correlated with a correlation coefficient r= `r format(R$r[1,2], digits = 3)` (CI: [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`], p-value = `r format(R$P[1,2], digits=3)`). That is, the correlation between the two parameters (height and weight) is not exactly equal to the simulated value (r= `r Rval50`). We will see later how we can recover the actual simulated correlation. This is reminiscent of when we generated uncorrelated parameters (`r fig_nums("PP4", display = "cite")`). Even though there was no correlation in the underlying variables (height and working memory capacity), the correlations that we found were not exactly zero but approximately zero.
 
 ## What is the expected p-value distribution if there is a correlation
 
-Now, we will repeat this process a number of times in order to obtain the distribution of p-values when there is a correlation R=`r Rval50` as we did earlier when no correlation was present and the distribution of p-values was completely flat (`r fig_nums("PP2", display = "cite")`). In contrast, When there is an underlying correlation between the two variables, the distribution of p-values becomes skewed with more p-values under 0.05.
+Now, we will repeat this process a number of times in order to obtain the distribution of p-values when there is a correlation r=`r Rval50` as we did earlier when no correlation was present and the distribution of p-values was completely flat (`r fig_nums("PP2", display = "cite")`). In contrast, When there is an underlying correlation between the two variables, the distribution of p-values becomes skewed with more p-values under 0.05.
 ``` {r SimulationR50, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
@@ -508,9 +508,9 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
   fig_nums("PP3_50", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
 
-### understanding power
+### Understanding power
 
-The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of R=`r Rval50` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100% minus power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% of them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with R=`r Rval50`, we have `r format(100*Psig, digits = 1)`% of detecting a significant correlation (see `r fig_nums("PP3_50", display="cite")` for an illustration).
+The percentage of significant correlations is equal the power of an experiment designed to detect a correlation of r=`r Rval50` with `r PopSize` observations. Indeed, the power of an experiment can be defined as the chance that an experiment designed to detect a given effect (here a correlation) will actually do so (100% minus power is also referred to as type II error or false negative). In our case, we performed as many experiments as we simulated correlations but only `r format(100*Psig, digits = 1)`% of them were significant. That means that if we have `r PopSize` observations from two populations that are correlated with r=`r Rval50`, we have `r format(100*Psig, digits = 1)`% of detecting a significant correlation (see `r fig_nums("PP3_50", display="cite")` for an illustration).
 
 ``` {r PlotRectangleErrorTypeR50, echo=FALSE, fig.cap=fig_nums("PP3_50")}
 PP3_50
@@ -600,7 +600,7 @@ CI28 <- CountCI28/length(res28$inCI)
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
-  # fig_nums("PPCIdef", paste("proportion of confidence interval including the actual effect size of R=", Rval50, ". Sample size used is", PopSize28, "but this is true for any sample size"),display=FALSE)
+  # fig_nums("PPCIdef", paste("proportion of confidence interval including the actual effect size of r=", Rval50, ". Sample size used is", PopSize28, "but this is true for any sample size"),display=FALSE)
 
 # plotting data linked to misinterpretation of CI 
   CountCI28prev <- sum(res28$inCIprev)
@@ -620,7 +620,7 @@ CI28prev <- CountCI28prev/length(res28$inCIprev)
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   PPCIboth <- ggarrange(PPCIdef,PPCIdefprev,ncol = 2, nrow = 1,labels = c("A","B"))
-  fig_nums("PPCIboth", paste("proportion of confidence intervals including the actual effect size of R=", Rval50, "(left panel) or the correlation coefficient of the next simulation (right panel). Sample size used is", PopSize28, "but this is true for any sample size"),display=FALSE)
+  fig_nums("PPCIboth", paste("proportion of confidence intervals including the actual effect size of r=", Rval50, "(left panel) or the correlation coefficient of the next simulation (right panel). Sample size used is", PopSize28, "but this is true for any sample size"),display=FALSE)
   
    PPCI_28 <- ggplot(res28, aes(x=CI, fill=Sig)) + 
     geom_histogram(aes(x=CI,fill=Sig),binwidth=.05,boundary = 0.05,color="black") +
@@ -632,17 +632,17 @@ CI28prev <- CountCI28prev/length(res28$inCIprev)
     labs(title="",x="CI spread" , y="Count")
 ```
 
-As indicated on `r fig_nums("PP28",display="cite")`, the expected power of an experiment is 80% (or 90%). Yet, this is here not the case. To detect a correlation R=`r Rval`, one needs `r PopSize28` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%. The power of an experiment depends on the size of the effect (here, the strength of the correlation) and on the number of samples. 
+As indicated on `r fig_nums("PP28",display="cite")`, the expected power of an experiment is 80% (or 90%). Yet, this is here not the case. To detect a correlation r=`r Rval`, one needs `r PopSize28` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%. The power of an experiment depends on the size of the effect (here, the strength of the correlation) and on the number of samples. 
 ``` {r RectangleErrorTypeR50_N28, echo=FALSE, fig.cap=fig_nums("PP28")}
 PP28
 ```
 
-This manipulations demonstrate how simulations can yield insights about the required sample size for detecting a correlation of a given value (Here, R=`r Rval50`). The problem with power is that we rarely now in advance how big the effect size (e.g. the strengthh the correlation) will be.
+This manipulations demonstrate how simulations can yield insights about the required sample size for detecting a correlation of a given value (Here, r=`r Rval50`). The problem with power is that we rarely now in advance how big the effect size (e.g. the strengthh the correlation) will be.
 
 __*Assignment:*__
-*How big needs the population size to be to reach a power of 80% for R=0.3 or R=0.1, a power of 90% for R=0.5?*
+*How big needs the population size to be to reach a power of 80% for r=0.3 or r=0.1, a power of 90% for r=0.5?*
 
-### effect of sample size on the accuracy of correlation estimation.
+### Effect of sample size on the accuracy of correlation estimation.
 
 ``` {r DistriR_R50_N15, echo=FALSE}
   Rsig <- mean(res$R[res$Sig==0])
@@ -711,7 +711,7 @@ On `r fig_nums("PP15vs28",display="cite")`, we can see that while many simulated
 PP15vs28
 ```
 
-The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. The 95% confidence interval give you a range of plausible values for the correlation for this particular sample/population. This interval has a 95% chance of containing the true effect size (here, the true value fo the correlation). To check this definition, we commputed the CI for each correlation presented on `r fig_nums("PP28",display="cite")`, and computed the proportion of simulated confidence intervals that included the true value of the correlation (R=`r Rval50`). Consistent with the definition, 95% of them did include the true effect size (see panel A of `r fig_nums("PPCIboth",display="cite")`).
+The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. The 95% confidence interval give you a range of plausible values for the correlation for this particular sample/population. This interval has a 95% chance of containing the true effect size (here, the true value fo the correlation). To check this definition, we commputed the CI for each correlation presented on `r fig_nums("PP28",display="cite")`, and computed the proportion of simulated confidence intervals that included the true value of the correlation (r=`r Rval50`). Consistent with the definition, 95% of them did include the true effect size (see panel A of `r fig_nums("PPCIboth",display="cite")`).
 
 As a correlate of this demonstration, it is interesting to investigate what the probability that the correlation of a second experiment will fall into the CI of the correlation of a first experiment. For instance, the CI for the correlation presented in `r fig_nums("PP450",display="cite")` was [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`]. What is then the chance that a second experiment with the same sample size provides a correlation that falls in this CI. To simulate this case,we will test whether the correlation of the simulated correlation #n falls within the 95% confidence interval of correlation #n-1.The results show that there is ONLY a `r format(CI28prev*100, digits = 1)`% probability that this is the case (see panel B of `r fig_nums("PPCIboth",display="cite")`).
 
@@ -728,9 +728,9 @@ PP_CI
 
 Comparing the two panels of `r fig_nums("PP_CI",display="cite")` demonstrate that increasing the sample size increase the accuracy of the estimation of each individual correlation coefficient (confidence intervals become narrower) in addition to increasing the accuracy of the estimation over multiple experiments (spread of simulated correlations coefficient is smaller when sample size increases, compare both panels of `r fig_nums("PP15vs28",display="cite")`). This shows that increasing sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient.
 
-### understanding that publication bias inflates effect size
+### Understanding that publication bias inflates effect size
 
-`r fig_nums("PP15vs28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in right panel of `r fig_nums("PP15vs28",display="cite")`, with N= `r PopSize28`), this average correlation (mean R=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (R= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is R=`r format(Rsig,digits=3)` while average correlation from all studies is R= `r format(Rall,digits=3)`)
+`r fig_nums("PP15vs28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in right panel of `r fig_nums("PP15vs28",display="cite")`, with N= `r PopSize28`), this average correlation (mean r=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (r= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is r=`r format(Rsig,digits=3)` while average correlation from all studies is r= `r format(Rall,digits=3)`)
 If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation. With low power, significant effect size are even more inflated.
 
 __*Assignment:*__
@@ -772,7 +772,7 @@ Plot2B <- ggplot(Good2B5, aes(x=NSig)) +
 fig_nums("Plot2B", paste("percentage of significant simulations among", Ngood ,"simulations for R =", Rval50, "and sample size =", PopSize),display=FALSE)
 ```
 
-It is clear from `r fig_nums("PP15vs28",display="cite")` that, even in the presence of an effect, some correlations will turn out to be non-significant. Then, it is interesting to look at the probability of getting one or two non-significant results in a series of `r Ngood` experiments. To do so, we simulated such series of `r Ngood` experiments `r Nsim` times and the counted the proportion of significant correlation.
+It is clear from `r fig_nums("PP15vs28",display="cite")` that, even in the presence of an effect, some correlations will turn out to be non-significant. Then, it is interesting to look at the probability of getting one or two non-significant results in a series of `r Ngood` experiments. To do so, we simulated such series of `r Ngood` experiments `r format(Nsim, scientific=FALSE)` times and the counted the proportion of significant correlation.
 
 To get a sense of the outcomes of this stimulation, one can use the Shiny App and repeatedly simulate `r Ngood` experiments (use the *generate again* button). In most of the cases, the `r Ngood` experiments do not yield `r Ngood` significant p-values. Actually, this only happens in `r Nall`% of the simulations.
 
@@ -826,14 +826,14 @@ In contrast, the probability of observing only significant p-values decreases wi
 
 ## Understanding p-values: summary and final assignments
 
-In this part, we started with the description of the p-value for a single correlation coefficient (Fisherian view). Then, we transitioned from one p-value to many p-values (N = `r Nsim`) in order to look at the distribution of p-values over multiple repetition of the same experiment (Neyman-Pearsonian view, [@goodman1999]) and to discuss the concept of false-positives and false-negatives. Hopefully these many p-values brought the readers insights into how p-values behave and how they should be interpreted.
+In this part, we started with the description of the p-value for a single correlation coefficient (Fisherian view). Then, we transitioned from one p-value to many p-values (N = `r format(Nsim, scientific=FALSE)`) in order to look at the distribution of p-values over multiple repetition of the same experiment (Neyman-Pearsonian view, [@goodman1999]) and to discuss the concept of false-positives and false-negatives. Hopefully these many p-values brought the readers insights into how p-values behave and how they should be interpreted.
 
 It is important to understand that the statistical problem here is well-defined. Indeed, in all simulations, we knew whether the two underlying variables were correlated or not. However, in science, the problem is often ill-defined. When a researcher performs a single experiment and get a p-value of 0.019, (s)he does not know whether this p-value corresponds to a true effect or to a false-positive correlation. This can only be determined at the end of several experiments albeit not all necessarily significant. As such, this suggests that we need a set of well-powered experiments in order to make a statement about the veracity of an effect. In other words, making statements about effect is only possible if we get away from the law of small numbers [@tversky1971]. In other words, we need larger samples (because they provide more reliable estimates) and several experiments (because they allow us to choose between two hypotheses, between the null effect or the existence of an effect).
 
 if we follow the same line of reasoning, one can investigate the distribution of p-values obtained from t-test aiming at comparing two independent groups. That is, instead of correlating the variables obtained from the random sampling, one can simply compare them with a t-test (the covariance matrix should have zeros on his off-diagonal elements). To simulate a difference between the two groups, one needs to change the mean of one of the groups. 
 
-### final assignments
-I have describe p-values distribution when there is an effect (R=0.5) or when there isn't (R=0). Now, let's test whether the attentive readers can solve the following problem [@gigerenzer2018]:
+### Final assignments
+I have describe p-values distribution when there is an effect (r=0.5) or when there isn't (r=0). Now, let's test whether the attentive readers can solve the following problem [@gigerenzer2018]:
 Consider a simple example: A researcher designs an experiment with 50% power to detect an effect of a medium size  and obtains a significant difference between means, p < .05. How likely is this ressearcher to replicate this effect in a second experiment with the same sample size (1) if there is an effect or (2) if there is no effect.
 
 *If the alternative hypothesis is true, then the probability of getting another significant result equals the statistical power of the test, that is, 50%. If, however, the null hypothesis is true, the probability of getting another significant result would still be only 5%.*
@@ -845,15 +845,15 @@ source: https://twitter.com/EJWagenmakers/status/889987997046910978
 
 *I would trust the paper B because it is very unlikely to have three p-values just under 0.05 (paper A) while having one non-significant p-value in three experiments is likely even if the power is 80%*
 
-Which one is more likely to replicate (for the same effect size): a correlation of R=0.7 with N=10 or a correlation of R=0.3 with N=100?
+Which one is more likely to replicate (for the same effect size): a correlation of r=0.7 with N=10 or a correlation of r=0.3 with N=100?
 
 
-# how irregularities in the data can yield spuriously low p-values and how to test that a proposed solution works.
+# How irregularities in the data can yield spuriously low p-values and how to test that a proposed solution works.
 
 Looking at false-positives or power is only correct if the studied p-values really reflect a true p-value. That is, this should not be artificially low because of the researchers' degrees-of-freedom or because the data do not conform to the assumptions underlying the statistical test used. The first point has been explored by others many times (CITE). We will therefore focus irregularities in the data. More specifically, we will look at how irregularities in the data can yield spurious correlations.
-Correlations are very sensitive to violations of the assumptions. Here, we will show that 1) in the absence of correlation (R=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when R=0) [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]; 2) in the absence of a correlation, data pooled between two different groups (e.g. young adults vs. old adults) with different means along the two variables will have a massive effect on the false-positive rate.
+Correlations are very sensitive to violations of the assumptions. Here, we will show that 1) in the absence of correlation (r=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when r=0) [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]; 2) in the absence of a correlation, data pooled between two different groups (e.g. young adults vs. old adults) with different means along the two variables will have a massive effect on the false-positive rate.
 
-## the outlier problem: simulation and solution
+## The outlier problem: simulation and solution
 
 ``` {r ExampleOutlier, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
@@ -886,7 +886,7 @@ To generate an outlier, we will first generate the x and y parameters for the `r
 Outlier4
 ```
 
-Despite the absence of correlation between the two underlying variables (R=`r Rval`), we observe a strong correlation R=`r format(Rout$r[1,2], digits = 2)` (CI: [`r format(Rresout$conf.int[1], digits = 2)`, `r format(Rresout$conf.int[2], digits = 2)`], p=`r format(Rout$P[1,2], digits = 2)`). However, it is unclear whether more correlations will turn out to be significant in the presence of an outlier. As outlined above, the p-value associated with a single correlation does not provide any information on the error rate. Therefore, as we did above, we generated many such samples and tested whether the presence of an outlier increases the chance of getting a significant correlation when the two underlying variables are not correlated (R=`r Rval`).
+Despite the absence of correlation between the two underlying variables (r=`r Rval`), we observe a strong correlation r=`r format(Rout$r[1,2], digits = 2)` (CI: [`r format(Rresout$conf.int[1], digits = 2)`, `r format(Rresout$conf.int[2], digits = 2)`], p=`r format(Rout$P[1,2], digits = 2)`). However, it is unclear whether more correlations will turn out to be significant in the presence of an outlier. As outlined above, the p-value associated with a single correlation does not provide any information on the error rate. Therefore, as we did above, we generated many such samples and tested whether the presence of an outlier increases the chance of getting a significant correlation when the two underlying variables are not correlated (r=`r Rval`).
 
 ### How sensisitive are correlations to one outlier?
 
@@ -926,7 +926,7 @@ PP2Out <- ggplot(resOut, aes(x=p, fill=Sig)) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
-# fig_nums("PP2Out", paste("distribution of p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
+# fig_nums("PP2Out", paste("distribution of p-values when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True r= ", Rval, "and the sample size is", PopSize),display=FALSE)
 
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1), t=c('a','b'))
   PP3Out <- ggplot() +  
@@ -969,10 +969,10 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   PP2and3Out <- ggarrange(PP2Out,PP3Out,ncol = 2, nrow = 1,labels = c("A","B"))
-  fig_nums("PP2and3Out", paste("Distribution of p-values (panel A) and proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display=FALSE)
+  fig_nums("PP2and3Out", paste("Distribution of p-values (panel A) and proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True r= ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is R=0. Therefore, we expect a uniform distribution of p-values (as in `r fig_nums("PP2",display="cite")`). In addition, only 5% of the simulated correlations should be significant (false-positive rate). Left panel of `r fig_nums("PP2and3Out",display="cite")` illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Out",display="cite")`)!
+We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is r=0. Therefore, we expect a uniform distribution of p-values (as in `r fig_nums("PP2",display="cite")`). In addition, only 5% of the simulated correlations should be significant (false-positive rate). Left panel of `r fig_nums("PP2and3Out",display="cite")` illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Out",display="cite")`)!
 
 ``` {r PlotDistriP_outlier, echo=FALSE, fig.cap=fig_nums("PP2and3Out")}
 PP2and3Out
@@ -980,9 +980,9 @@ PP2and3Out
 
 The interesting reader can use the Shiny App or the R code to explore the influnce of population size and the distance of the outlier from the mean on the increase in number of false-positive correlations caused by the outlier. Off course, this is also reflected in the value of the average correlation coefficient.
 
-__*Assignment*__: *These analyses have been performed on the basis of R=0. The intersted reader can explore the influence of such outlier on simulated correlations with R>0.*
+__*Assignment*__: *These analyses have been performed on the basis of r=0. The intersted reader can explore the influence of such outlier on simulated correlations with R>0.*
 
-## testing solutions
+## Testing solutions
 
 Similarly to [@pernet2013], we will use simulations to test whether using other types of correlations than Pearson's correlation can mitigate the influence of outliers on the false-positive error rate. Such a solution will be considered to be good if, in the absence of correlation between the underlying variables, only 5% of simulated correlations are false-positive.Furthermore, the average correlation across simulations should be closed to the expected one.
 
@@ -1046,7 +1046,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
-  fig_nums("PP3Spear",paste("Ability of Spearman correlation to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+  fig_nums("PP3Spear",paste("Ability of Spearman correlation to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
 A first solution might be to use a non-parametric rank correlation such as Spearman (non-parametric version of the Pearson correlation). `r fig_nums("PP3Spear",display="cite")` shows that the influence of the outlier is much reduced but that the false-positive error rate (= `r format(PsigSpear*100,digits=1)`%) is still not close to the 5% level.
@@ -1115,7 +1115,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
-    fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+    fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
 In contrast, the use of winsorized correlation ([@pernet2013]) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by `r fig_nums("PP3Rob",display="cite")`, which shows that the influence of the outlier is eliminated and that the type I error rate (= `r PsigRob`) is very close to the 5% level. In R, this correlation is available in the $WRS2$ package [@mair2018].
@@ -1125,7 +1125,7 @@ PP3Rob
 ```
 
 
-## the subgroup problem: simulation and solution
+## The subgroup problem: simulation and solution
 
 Researchers often want to estimate correlation across different subgroups. For instance, in my own research, I wanted to correlate the amount of explicit motor learning with working memory capacity across both young and old participants [@vandevoorde2019]. Yet, working memory capacity is known to decline with aging and so is the explicit component of motor learning [@vandevoorde2019]. Yet, this does not mean that these two variables are correlated across participants. The goal of this section is to investigate the influence of subgroups on correlations because many researchers compute correlations on the pooled data. Yet correlations on heterogeneous subgroups are problematic [@hadzi-pavlovic2007; @hassler2003; @sockloff1975].
 
@@ -1153,10 +1153,10 @@ SubG4 <- ggplot(Scatter1) +
                      values = cols,
                      labels = POP)+
   labs(title = "",x="Random variable 1" , y="Random variable 2")
-  fig_nums("SubG4",paste("Example of correlation biased by differences between subgroups", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+  fig_nums("SubG4",paste("Example of correlation biased by differences between subgroups", SDdistSub," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-To generate subgroups, we first generate the x and y parameters for the `r PopSize` individuals from two uncorrelated variables (R=`Rval`). We will then split the population into two subgroups and add a value of `r SDdistSub` to the values of both parameters for one of the two subgroups. This produces a scatterplot such as the one presented on `r fig_nums("SubG4",display="cite")`.
+To generate subgroups, we first generate the x and y parameters for the `r PopSize` individuals from two uncorrelated variables (r=`Rval`). We will then split the population into two subgroups and add a value of `r SDdistSub` to the values of both parameters for one of the two subgroups. This produces a scatterplot such as the one presented on `r fig_nums("SubG4",display="cite")`.
 
 ``` {r PlotExampleSubgroup, echo=FALSE, fig.cap=fig_nums("SubG4")}
 SubG4
@@ -1235,7 +1235,7 @@ PP2Sub <- ggplot(resSub, aes(x=p, fill=Sig)) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
     labs(title="",x="p-value" , y="Count")
-  # fig_nums("PP2Sub",paste("distribution of p-values when the simulated correlations are biased by subgroup differences. Here, the subgroups are ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+  # fig_nums("PP2Sub",paste("distribution of p-values when the simulated correlations are biased by subgroup differences. Here, the subgroups are ", SDdist," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 
 d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1), t=c('a','b'))
   PP3Sub <- ggplot() +  
@@ -1277,10 +1277,10 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   PP2and3Sub <- ggarrange(PP2Sub,PP3Sub,ncol = 2, nrow = 1,labels = c("A","B"))
-  fig_nums("PP2and3Sub", paste("Influence of subgroup differences on the distribution of p-values (panel A) and on the proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and sample size N= ", PopSize),display=FALSE)
-    # fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+  fig_nums("PP2and3Sub", paste("Influence of subgroup differences on the distribution of p-values (panel A) and on the proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True r= ", Rval, "and sample size N= ", PopSize),display=FALSE)
+    # fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
-In this graph, we observe a strong correlation R=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulation (`r Nsim` times) allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold.
+In this graph, we observe a strong correlation r=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulation (`r format(Nsim, scientific=FALSE)` times) allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold.
 
 __*Assignment:*__
 *The interested reader can test the effect of the distance between the two groups (in SD) on the percentage of false-positive correlations. Sample size also influences this percentage*
@@ -1298,7 +1298,7 @@ __*Assignment:*__
 
 ### Solution to the subgroup problem
 
-We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take the subgroups into account in a regression model in order to bring the percentage of false-positive correlations back to 5% (which is expected given that the two underlying variables are uncorrelated, R=`r Rval`)
+We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take the subgroups into account in a regression model in order to bring the percentage of false-positive correlations back to 5% (which is expected given that the two underlying variables are uncorrelated, r=`r Rval`)
 
 ### Spearmann is not a solution
 
@@ -1361,7 +1361,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
-      fig_nums("PP3SubSpear",paste("Inability of Spearman correlation to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+      fig_nums("PP3SubSpear",paste("Inability of Spearman correlation to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
 A first solution might be to use a non-parametric rank correlation such as Spearman (non-parametric version of the Pearson correlation). `r fig_nums("PP3SubSpear",display="cite")` shows that the influence of subgroups is not eliminated as the false-positive error rate (`r format(PsigSubSpear*100,digits=1)`%) remains larger than the expected 5% level when the underlying variables are not correlated.
@@ -1435,7 +1435,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   
-  fig_nums("PP3Reg",paste("Ability of regression to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for standardized regression coefficient when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R= ", Rval, "and the sample size is", PopSize),display = FALSE)
+  fig_nums("PP3Reg",paste("Ability of regression to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for standardized regression coefficient when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 
   RsigReg <- mean(resReg$R[resReg$Sig==0])
   RallReg <- mean(resReg$R)
@@ -1534,7 +1534,7 @@ PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) +
     labs(title="",x="correlation coefficient" , y="Count")
 fig_nums("PP1Reg50", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
-Taking subgroups into account does not prevent us from detecting correlations when they are present. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (R=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (R=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on `r fig_nums("PP1Reg50",display="cite")`). It is important to note that the transition from significant to non-significant correlations presented on `r fig_nums("PP1Reg50",display="cite")`) is again more blurred than the ones shown on both panels of `r fig_nums("PP15vs28",display="cite")`. 
+Taking subgroups into account does not prevent us from detecting correlations when they are present. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (r=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (r=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on `r fig_nums("PP1Reg50",display="cite")`). It is important to note that the transition from significant to non-significant correlations presented on `r fig_nums("PP1Reg50",display="cite")`) is again more blurred than the ones shown on both panels of `r fig_nums("PP15vs28",display="cite")`. 
 
 ``` {r PlotDistriR50_Reg_subgroups, echo=FALSE, fig.cap=fig_nums("PP1Reg50")}
 PP1Reg50
