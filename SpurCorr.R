@@ -65,8 +65,8 @@ report <- function(ListOut){
   PP2 <- ggplot(dat, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
-    geom_hline(yintercept=sum(SigBin), linetype="dashed", color = "black", data = dat) +
-    geom_label(aes(x = 0, y = sum(SigBin), label = "H0", data = dat), 
+    geom_hline(yintercept=sum(dat$SigBin), linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = sum(dat$SigBin), label = "H0"), 
                hjust = "left", 
                vjust = "bottom", 
                colour = "black", 
