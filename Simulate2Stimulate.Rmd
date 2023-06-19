@@ -214,7 +214,7 @@ Simulating such correlation repeatedly can allow one to look at the distribution
 PP2
 ```
 
-Interestingly, even in the absence of correlation between the parameters x and y, there is a subset of correlations associated with a p-value under the significance threshold (type II error). Those are highlighted in orange in `r fig_nums("PP2", display = "cite")` and are called false-positives. That is, these correlations are significant despite the fact that the underlying variables x and y (that where measured on `r PopSize` participants) are, by design, not correlated. Given that the distribution of p-values is uniform and that p-values fall in the interval [0,1], there will always be 5% of the p-values under the threshold of 0.05, independently of the number of samples for the two variables.
+Interestingly, even in the absence of correlation between the parameters x and y, there is a subset of correlations associated with a p-value under the significance threshold (type II error). Those are highlighted in orange in `r fig_nums("PP2", display = "cite")` and are called false-positives. That is, these correlations are significant despite the fact that the underlying independent variables x and y of `r PopSize` participants are, by design, not correlated. Given that the distribution of p-values is uniform and that p-values fall in the interval [0,1], there will always be 5% of the p-values under the threshold of 0.05, independently of the number of samples for the two variables.
 
 > __*Assignment:*__
 > *check that increasing the population size (value of PopSize in the code) does not influence the > distribution of p-values when the two variables are unccorelated.*
@@ -296,7 +296,7 @@ The distribution of the correlation coefficient will allow us to understand the 
 PP1
 ```
 
-This is a fallacy consistent with the law of small numbers [@tversky1971]:  "*In evaluating replications, his or others', he has unreasonably high expectations about the replicability of significant results. He underestimates the breadth of confidence intervals.*"  One could rephrase it as follows: *If it so big and significant, it can only be true.* It is therefore important to note that, when correlating two variables and looking at a high and significant correlation, it is impossible to say whether this is a true effect or a false-positive correlation. Replication of this correlation in an independent and hopefully larger sample can only increase the probability that this correlation is true if it is again significant. In the other case, it increases the probability that the first correlation was a false-positive one. Yet, even two correlations are insufficient to draw a firm conclusion about the veracity of the effect but they at least give an better idea of the investigated correlation.
+This is a fallacy consistent with the law of small numbers [@tversky1971]:  "*In evaluating replications, his or others', he has unreasonably high expectations about the replicability of significant results. He underestimates the breadth of confidence intervals.*"  One could rephrase it as follows: *If it so big and significant, it can only be true.* It is therefore important to note that, when correlating two variables and looking at a high and significant correlation, it is impossible to say whether this is a true effect or a false-positive correlation. Replication of this correlation in an independent and hopefully larger sample can only increase the probability that this correlation is true if it is again significant. In the other case, it increases the probability that the first correlation was a false-positive one. Yet, even two correlations are insufficient to draw a firm conclusion about the reliability of the effect but they at least give a better idea of the investigated correlation.
 
 In other words high-correlations on a limited number of datapoints should require skepticism for any scientists. I am well aware that it is not always easy to do so (see the beautiful correlation on N=6 in [@orbandexivry2009a]).
 
@@ -353,7 +353,7 @@ PP175
 The small number fallacy has important consequences for the publishability of findings. If two researchers are (unknowingly) reporting a false-positive correlation with N=`r PopSize` and r=0.7 for researcher A and with N=`r PopSize75` and r=0.4 for researcher B, which one will more easily publish in a high-impact journal (whatever that means...)? Therefore, any scientist should be warry on exploratory correlations with low N.
 
 __*Assignment:*__
-*How big needs the population size to be to have all false positive correlations with a smaller than medium effect size (r=0.3)?*
+*How big does the population size need to be to have all false positive correlations below a medium effect size (r=0.3)?*
 
 ### Understanding the multiple comparison problem.
 
@@ -365,12 +365,12 @@ DifSig <- SigIndex - c(1,SigIndex[1:length(SigIndex)-1])+1
 
 ```
 
-These simulations also show that if we keep generating random parameters, we are assured of getting at least one significant correlation. With `r format(Nsim, scientific=FALSE)` simulations, there is 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(mean(DifSig),digits=1)` trials. That is, if one keeps testing the significance of correlation between different parameters, (s)he is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon [@bennett2011].
+These simulations also show that if we keep generating random parameters, we are assured of getting at least one significant correlation. With `r format(Nsim, scientific=FALSE)` simulations, there is almost 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(mean(DifSig),digits=1)` trials. That is, if one keeps testing the significance of correlation between different parameters, (s)he is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon [@bennett2011].
 
 This illustrates that if someone keeps trying to test correlation between many possible variables, the probability of getting a significant correlation is 100% even if there should be no correlation.
 
 __*Assignment:*__
-*Simulate repeatedly a single correlation. How long did you have to wait to get at least one significant correlation? Now, simulate 50 different correlations. How often are none of the correlations significant? This demonstrates that it is not difficult to get a significant correlation even if the data is completely random...*
+*Repeatedly simulate a single correlation. How long did you have to wait to get at least one significant correlation? Now, simulate 50 different correlations. How often are none of the correlations significant? This demonstrates that it is not difficult to get a significant correlation even if the data is completely random.*
 
 ```{r SetR50, echo=FALSE}
 Rval50 = 0.5
@@ -420,9 +420,9 @@ PP450
 ```
 Together, these two parameters measured in `r PopSize` individuals are correlated with a correlation coefficient r= `r format(R$r[1,2], digits = 3)` (CI: [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`], p-value = `r format(R$P[1,2], digits=3)`). That is, the correlation between the two parameters (height and weight) is not exactly equal to the simulated value (r= `r Rval50`). We will see later how we can recover the actual simulated correlation. This is reminiscent of when we generated uncorrelated parameters (`r fig_nums("PP4", display = "cite")`). Even though there was no correlation in the underlying variables (height and working memory capacity), the correlations that we found were not exactly zero but approximately zero.
 
-## What is the expected p-value distribution if there is a correlation
+## What is the expected p-value distribution if there is a correlation r=`r Rval50`
 
-Now, we will repeat this process a number of times in order to obtain the distribution of p-values when there is a correlation r=`r Rval50` as we did earlier when no correlation was present and the distribution of p-values was completely flat (`r fig_nums("PP2", display = "cite")`). In contrast, When there is an underlying correlation between the two variables, the distribution of p-values becomes skewed with more p-values under 0.05.
+Now, we will repeat this process a number of times in order to obtain the distribution of p-values when there is a correlation r=`r Rval50`, just as we did earlier when no correlation was present and the distribution of p-values was completely flat (`r fig_nums("PP2", display = "cite")`). In contrast, when there is an underlying correlation between the two variables, the distribution of p-values becomes skewed with more p-values under 0.05.
 ``` {r SimulationR50, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
 res <- data.frame(p=rep(NA,Nsim),R=rep(NA,Nsim),Sig=rep(NA,Nsim))
@@ -467,7 +467,7 @@ PPCI_50 <- ggplot(res, aes(x=CI, fill=Sig)) +
 PP2_50
 ```
 
-In this graph, it appears very clearly that p-values represents a continuous quantity and that there is nothing special about the 0.05 threshold. It also shows that in the presence of an effect, getting a p-value between 0.04 and 0.05 is not as likely as getting a p-value below 0.01. This reinforces the statement that we should not dichotomize p-values in p<0.05 and p>0.05.
+In this graph, it appears very clearly that p-values represents a continuous quantity and that there is nothing special about the 0.05 threshold. It also shows that in the presence of an effect, getting a p-value between 0.04 and 0.05 is not as likely as getting a p-value below 0.01. *This reinforces the statement that we should not dichotomize p-values in p<0.05 and p>0.05.*
 `r fig_nums("PP2_50",display="cite")` also shows that non-significant p-values cannot be considered as a proof that there are no correlation between the variables x and y. Indeed, despite the fact that the underlying variables are correlated (R = `r Rval50`), a portion of the simulated correlations are not significant. The non-significant correlations on `r fig_nums("PP2_50",display="cite")` are false-negative. That is, these correlations are are not significant even though the underlying variables x and y are correlated. False-negative correlations correspond to type II error, which is linked to the power of an experiment.
 
 
@@ -637,7 +637,7 @@ As indicated on `r fig_nums("PP28",display="cite")`, the expected power of an ex
 PP28
 ```
 
-This manipulations demonstrate how simulations can yield insights about the required sample size for detecting a correlation of a given value (Here, r=`r Rval50`). The problem with power is that we rarely now in advance how big the effect size (e.g. the strengthh the correlation) will be.
+This manipulations demonstrate how simulations can yield insights about the required sample size for detecting a correlation of a given value (Here, r=`r Rval50`). The problem with power is that we rarely know in advance the effect size magnitude (e.g. the strengthh the correlation).
 
 __*Assignment:*__
 *How big needs the population size to be to reach a power of 80% for r=0.3 or r=0.1, a power of 90% for r=0.5?*
@@ -711,9 +711,9 @@ On `r fig_nums("PP15vs28",display="cite")`, we can see that while many simulated
 PP15vs28
 ```
 
-The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. The 95% confidence interval give you a range of plausible values for the correlation for this particular sample/population. This interval has a 95% chance of containing the true effect size (here, the true value fo the correlation). To check this definition, we commputed the CI for each correlation presented on `r fig_nums("PP28",display="cite")`, and computed the proportion of simulated confidence intervals that included the true value of the correlation (r=`r Rval50`). Consistent with the definition, 95% of them did include the true effect size (see panel A of `r fig_nums("PPCIboth",display="cite")`).
+The accuracy of the correlation can also be quantified by the confidence interval associated with each correlation in particular. The 95% confidence interval give you a range of plausible values for the correlation for this particular sample/population. This interval has a 95% chance of containing the true effect size (here, the true value fo the correlation). To check this definition, we computed the CI for each correlation presented on `r fig_nums("PP28",display="cite")`, and computed the proportion of simulated confidence intervals that included the true value of the correlation (r=`r Rval50`). Consistent with the definition, 95% of them did include the true effect size (see panel A of `r fig_nums("PPCIboth",display="cite")`).
 
-As a correlate of this demonstration, it is interesting to investigate what the probability that the correlation of a second experiment will fall into the CI of the correlation of a first experiment. For instance, the CI for the correlation presented in `r fig_nums("PP450",display="cite")` was [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`]. What is then the chance that a second experiment with the same sample size provides a correlation that falls in this CI. To simulate this case,we will test whether the correlation of the simulated correlation #n falls within the 95% confidence interval of correlation #n-1.The results show that there is ONLY a `r format(CI28prev*100, digits = 1)`% probability that this is the case (see panel B of `r fig_nums("PPCIboth",display="cite")`).
+As a correlate of this demonstration, it is interesting to investigate what the probability that the correlation of a second experiment will fall into the CI of the correlation of a first experiment. For instance, the CI for the correlation presented in `r fig_nums("PP450",display="cite")` was [`r format(Rres50$conf.int[1], digits = 2)`, `r format(Rres50$conf.int[2], digits = 2)`]. What is then the chance that a second experiment with the same sample size provides a correlation that falls in this CI. To simulate this case,we will test whether the correlation of the simulated correlation #n falls within the 95% confidence interval of correlation #n-1. The results show that there is ONLY a `r format(CI28prev*100, digits = 1)`% probability that the magnitude of the next simulated correlation falls within the confidence interval of the previous one  (see panel B of `r fig_nums("PPCIboth",display="cite")`).
 
 ``` {r DefinitionOfCI, echo=FALSE, fig.cap=fig_nums("PPCIboth")}
 PPCIboth
@@ -730,7 +730,7 @@ Comparing the two panels of `r fig_nums("PP_CI",display="cite")` demonstrate tha
 
 ### Understanding that publication bias inflates effect size
 
-`r fig_nums("PP15vs28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in right panel of `r fig_nums("PP15vs28",display="cite")`, with N= `r PopSize28`), this average correlation (mean r=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (r= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is r=`r format(Rsig,digits=3)` while average correlation from all studies is r= `r format(Rall,digits=3)`)
+`r fig_nums("PP15vs28",display="cite")` also indicates the importance of publishing non-significant findings. Indeed, if one looks at the average correlation for the significant correlations (orange dashed vertical line in right panel of `r fig_nums("PP15vs28",display="cite")`, with N= `r PopSize28`), this average correlation (mean r=`r format(Rsig28,digits=3)`) overestimates the actual correlation value (r= `r Rval50`). In contrast, the average correlation over all samples (darkblue dashed vertical line on the graphs above) is much closer to the actual simulated correlation (with N= `r PopSize28`, average correlation is `r format(Rall28,digits=3)`). Furhermore, this overestimation of the actual correlation is even bigger with smaller sample sizes (with N= `r PopSize`, average correlation from significant ones is r=`r format(Rsig,digits=3)` while the average correlation from all studies is r= `r format(Rall,digits=3)`)
 If we look at the mean correlation from only significant studies, it is always larger than the actual population average correlation. With low power, significant effect size are even more inflated.
 
 __*Assignment:*__
@@ -772,7 +772,7 @@ Plot2B <- ggplot(Good2B5, aes(x=NSig)) +
 fig_nums("Plot2B", paste("percentage of significant simulations among", Ngood ,"simulations for R =", Rval50, "and sample size =", PopSize),display=FALSE)
 ```
 
-It is clear from `r fig_nums("PP15vs28",display="cite")` that, even in the presence of an effect, some correlations will turn out to be non-significant. Then, it is interesting to look at the probability of getting one or two non-significant results in a series of `r Ngood` experiments. To do so, we simulated such series of `r Ngood` experiments `r format(Nsim, scientific=FALSE)` times and the counted the proportion of significant correlation.
+It is clear from `r fig_nums("PP15vs28",display="cite")` that, even in the presence of an effect, some correlations will turn out to be non-significant. Then, it is interesting to look at the probability of getting one or two non-significant results in a series of `r Ngood` experiments. To do so, we simulated `r Ngood` experiments `r format(Nsim, scientific=FALSE)` times and the counted the proportion of significant correlations.
 
 To get a sense of the outcomes of this stimulation, one can use the Shiny App and repeatedly simulate `r Ngood` experiments (use the *generate again* button). In most of the cases, the `r Ngood` experiments do not yield `r Ngood` significant p-values. Actually, this only happens in `r Nall`% of the simulations.
 
@@ -800,7 +800,7 @@ Yall28 <- sum(Good2B528$NSig>0.99)
 Nall28 = 100*Yall28/Nsim
 ```
 
-This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth [@francis2013a]. Either they have plenty of studies in their file-drawer or they are use questionable practice to always obtain significant p-values. I personally find it depressing to assist to presentations with series of only significant studies with small sample size. This cannot reflect the reality [@lane2016].
+This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth [@francis2013a]. Either they have plenty of studies in their file-drawer or they are use questionable practice to always obtain significant p-values. I personally find it difficult to believe claims made from a series of only significant studies with small sample sizes. This cannot reflect the reality [@lane2016].
 
 Note that the percentage of series of `r Ngood` simulations with `r Ngood` significant studies increases with power and sample size (N=`r PopSize`: `r Nall`%; N=`r PopSize28`: `r Nall28`%). Yet, even with 80% power, these remain the minority (`r 100-Nall28`% of the series of `r Ngood` simulations contain at least one non-significant p-value).
 
