@@ -27,13 +27,13 @@ library(ggpubr) # for ggarrange
 fig_nums <- captioner()
 ```
 
+<!-- To do, ajdust the format thing to make sure that I did not reduce the number of digits shown when it was set to 0. Need to use format(round(XX, 2)) if I only want 2 digits -->
+
 # Introduction
 
 Statistical significance and the concept of p-values are at the heart of a philosophical debate [@wasserstein2016]. Should we abandon the use of p-values [@szucs2017], should we use a more severe significance threshold [@benjamin2018], an adapted one [@lakens2018] or remove it entirely [@amrhein2018a]? These questions are often hotly debated in scientific papers and social media. Yet, the problem with p-values is that people do not understand them properly or do not understand the circumstances of when to use a p-value [@colquhoun2014; @gagnier2017a; @greenland2016]. A p-value can be defined as follows: "*the P value can be viewed as a continuous measure of the compatibility between the data and the entire model used to compute it, ranging from 0 for complete incompatibility to 1 for perfect compatibility*" [@greenland2016] or "*p-value is the probability that the data would be equal to or more extreme than what would be expected by chance.*". Yet, such definition does not provide a lot of insights for most people on how p-values behave in different circumstances. Here, we use our ability to generate random samples of different populations as a tool to get insights into p-values [@colquhoun2014; @martins2018; @ohara2019; @tintle2015]. These simulations of randomly correlated or uncorrelated variables are done with correlations as the statistical test of interest. These simulations highlight the many problems that have been discussed in meta-science (the science of science). 
 
-``` {r}
-# $$This part adresses the significance problem linked to p-values.\
-```
+<!-- # $$This part adresses the significance problem linked to p-values.\ -->
 
 P-values on their own have very little value if they are not coupled to the effect size of an effect [@hubbard2008]. Indeed, while we sometimes want to know whether a relationship exist between two variables (e.g. air pollution and respiratory disease), we often also want to know the importance of this link. Does hair pollution explains 0.1 or 25% of respiratory disease incidence. The ability to estimate the importance of such relationship is referred to as the estimation problem. Estimation is important not for distinguishing between two theories but to assess the magnitude of the relationship [@sullivan2012]. The estimation problem is made complicated by publication bias [@joober2012; @mlinaric2017; @song2013]. That is, people rarely published a non-significant effect but readily publish significant effects. To address this issue, here I will use simulation to understand how publication bias threatens the estimation of effect size magnitude.
 
@@ -230,8 +230,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = Psig),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.8, y = Psig/2, label = "False-Positive"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+    geom_label(aes(x = 0.86, y = Psig/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -249,6 +249,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1)) +
     labs(title="",y="\n \n \nProportion of simulations") +
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x = element_blank(),
           axis.ticks.x=element_blank())
   fig_nums("PP3_0", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval, "and the sample size is", PopSize),display=FALSE)
@@ -484,8 +486,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
                       labels=c("p<=0.05", "p>0.05")) +
     geom_segment(aes(x = 0.68, y = 1, xend = 0.68, yend = Psig),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")))+
-    geom_label(aes(x = 0.8, y = Psig+((1-Psig)/2), label = "False-Negative"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"))+
+    geom_label(aes(x = 0.86, y = Psig+((1-Psig)/2), label = "False-Negative"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "black", 
@@ -504,6 +506,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
   fig_nums("PP3_50", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
@@ -558,8 +562,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
                       labels=c("p<=0.05", "p>0.05")) +
     geom_segment(aes(x = 0.68, y = 1, xend = 0.68, yend = Psig28),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")))+
-    geom_label(aes(x = 0.8, y = Psig28+((1-Psig28)/2), label = "False-Negative"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"))+
+    geom_label(aes(x = 0.86, y = Psig28+((1-Psig28)/2), label = "False-Negative"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "black", 
@@ -578,6 +582,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   fig_nums("PP28", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
@@ -800,9 +806,9 @@ Yall28 <- sum(Good2B528$NSig>0.99)
 Nall28 = 100*Yall28/Nsim
 ```
 
-This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth [@francis2013a]. Either they have plenty of studies in their file-drawer or they are use questionable practice to always obtain significant p-values. I personally find it difficult to believe claims made from a series of only significant studies with small sample sizes. This cannot reflect the reality [@lane2016].
+This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth [@francis2013a]. Either they have plenty of studies in their file-drawer or they are use questionable research practices to always obtain significant p-values. It is difficult to believe claims made from a series of only significant studies with small sample sizes. This cannot reflect the reality [@lane2016].
 
-Note that the percentage of series of `r Ngood` simulations with `r Ngood` significant studies increases with power and sample size (N=`r PopSize`: `r Nall`%; N=`r PopSize28`: `r Nall28`%). Yet, even with 80% power, these remain the minority (`r 100-Nall28`% of the series of `r Ngood` simulations contain at least one non-significant p-value).
+Note that the percentage of series of `r Ngood` simulations that are all significant increases with power and sample size (N=`r PopSize`: `r Nall`%; N=`r PopSize28`: `r Nall28`%). Yet, even with 80% power, these remain the minority (`r 100-Nall28`% of the series of `r Ngood` simulations contain at least one non-significant p-value).
 
 ``` {r 2Good2Btrue28_10, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
@@ -822,23 +828,23 @@ Yall28_10 <- sum(Good2B528_10$NSig>0.99)
 Nall28_10 = 100*Yall28_10/Nsim
 ```
 
-In contrast, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are too good to be true [@francis2014].
+Furthermore, the probability of observing only significant p-values decreases with the number of experiments considered in one series. For instance, when considering a series of `r Ngood_10` experiments, the probability of observing `r Ngood_10` significant p-values is only `r Nall28_10`%, despite having 80% power. Again, this reinforces the conclusion that every scientists should now and then report experiments that failed. Yet, we know this is rarely the case and these scientists present results that are likely better than the reality [@francis2014].
 
 ## Understanding p-values: summary and final assignments
 
 In this part, we started with the description of the p-value for a single correlation coefficient (Fisherian view). Then, we transitioned from one p-value to many p-values (N = `r format(Nsim, scientific=FALSE)`) in order to look at the distribution of p-values over multiple repetition of the same experiment (Neyman-Pearsonian view, [@goodman1999]) and to discuss the concept of false-positives and false-negatives. Hopefully these many p-values brought the readers insights into how p-values behave and how they should be interpreted.
 
-It is important to understand that the statistical problem here is well-defined. Indeed, in all simulations, we knew whether the two underlying variables were correlated or not. However, in science, the problem is often ill-defined. When a researcher performs a single experiment and get a p-value of 0.019, (s)he does not know whether this p-value corresponds to a true effect or to a false-positive correlation. This can only be determined at the end of several experiments albeit not all necessarily significant. As such, this suggests that we need a set of well-powered experiments in order to make a statement about the veracity of an effect. In other words, making statements about effect is only possible if we get away from the law of small numbers [@tversky1971]. In other words, we need larger samples (because they provide more reliable estimates) and several experiments (because they allow us to choose between two hypotheses, between the null effect or the existence of an effect).
+It is important to understand that the statistical problem here is well-defined. Indeed, in all simulations, we knew whether the two underlying variables were correlated or not. However, in science, the problem is often ill-defined. When a researcher performs a single experiment and get a p-value of 0.019, (s)he does not know whether this p-value corresponds to a true effect or to a false-positive correlation. This can only be determined at the end of several experiments albeit not all necessarily significant. As such, this suggests that we need a set of well-powered experiments to make a statement about the reliability of an effect. Making statements about an effect is only possible if we get away from the law of small numbers [@tversky1971]. In other words, we need several experiments (because they allow us to choose between two hypotheses, between the null effect or the existence of an effect) with large samples (because they provide more reliable estimates).
 
 if we follow the same line of reasoning, one can investigate the distribution of p-values obtained from t-test aiming at comparing two independent groups. That is, instead of correlating the variables obtained from the random sampling, one can simply compare them with a t-test (the covariance matrix should have zeros on his off-diagonal elements). To simulate a difference between the two groups, one needs to change the mean of one of the groups. 
 
 ### Final assignments
 I have describe p-values distribution when there is an effect (r=0.5) or when there isn't (r=0). Now, let's test whether the attentive readers can solve the following problem [@gigerenzer2018]:
-Consider a simple example: A researcher designs an experiment with 50% power to detect an effect of a medium size  and obtains a significant difference between means, p < .05. How likely is this ressearcher to replicate this effect in a second experiment with the same sample size (1) if there is an effect or (2) if there is no effect.
+Consider a simple example: A researcher designs an experiment with 50% power to detect an effect of a medium size  and obtains a significant difference between means, p < .05. How likely is this researcher to replicate this effect in a second experiment with the same sample size (1) if there is an effect or (2) if there is no effect.
 
 *If the alternative hypothesis is true, then the probability of getting another significant result equals the statistical power of the test, that is, 50%. If, however, the null hypothesis is true, the probability of getting another significant result would still be only 5%.*
 
-You read two papers, each reporting three preregistered analyses. Which effect seems more reliable?
+You read two papers, each reporting the results of three experiments. Which paper seems more plausible?
 A: p=0.024, p=0.034 and p=0.031
 B: p=0.25, p=0.032 and p=0.0001
 source: https://twitter.com/EJWagenmakers/status/889987997046910978
@@ -850,8 +856,7 @@ Which one is more likely to replicate (for the same effect size): a correlation 
 
 # How irregularities in the data can yield spuriously low p-values and how to test that a proposed solution works.
 
-Looking at false-positives or power is only correct if the studied p-values really reflect a true p-value. That is, this should not be artificially low because of the researchers' degrees-of-freedom or because the data do not conform to the assumptions underlying the statistical test used. The first point has been explored by others many times (CITE). We will therefore focus irregularities in the data. More specifically, we will look at how irregularities in the data can yield spurious correlations.
-Correlations are very sensitive to violations of the assumptions. Here, we will show that 1) in the absence of correlation (r=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when r=0) [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]; 2) in the absence of a correlation, data pooled between two different groups (e.g. young adults vs. old adults) with different means along the two variables will have a massive effect on the false-positive rate.
+Looking at false-positives or power, as we have done above, is only correct if the studied p-values really reflect an actual p-value. That is, this should not be artificially low because of the researchers' degrees-of-freedom or because the data do not conform to the assumptions underlying the statistical test used. The first point has been explored by others many times (CITE). We will therefore focus the discussion on irregularities in the data and how irregularities in the data can yield spurious correlations. Indeed, correlations are very sensitive to violations of assumptions. Here, we will show that 1) in the absence of correlation (r=0), the presence of an outlier dramatically increases the false-positive rate (more than 5% of correlations are significant when r=0) [@abdullah1990; @pernet2013; @zimmerman1994; @rousselet2012a]; 2) in the absence of a correlation, data pooled between two different groups (e.g. young adults vs. old adults) with different means along the two variables will have a massive effect on the false-positive rate.In the presence of an effect, there is a large overestimation of the effect size in both cases (presence of an outlier or pooled data across two subgroups).
 
 ## The outlier problem: simulation and solution
 
@@ -886,9 +891,9 @@ To generate an outlier, we will first generate the x and y parameters for the `r
 Outlier4
 ```
 
-Despite the absence of correlation between the two underlying variables (r=`r Rval`), we observe a strong correlation r=`r format(Rout$r[1,2], digits = 2)` (CI: [`r format(Rresout$conf.int[1], digits = 2)`, `r format(Rresout$conf.int[2], digits = 2)`], p=`r format(Rout$P[1,2], digits = 2)`). However, it is unclear whether more correlations will turn out to be significant in the presence of an outlier. As outlined above, the p-value associated with a single correlation does not provide any information on the error rate. Therefore, as we did above, we generated many such samples and tested whether the presence of an outlier increases the chance of getting a significant correlation when the two underlying variables are not correlated (r=`r Rval`).
+Despite the absence of correlation between the two underlying variables (r=`r Rval`), we observe a strong correlation r=`r format(Rout$r[1,2], digits = 2)` (CI: [`r format(Rresout$conf.int[1], digits = 2)`, `r format(Rresout$conf.int[2], digits = 2)`], p=`r format(Rout$P[1,2], digits = 2)`). However, a single simulation does not tell us how an outlier impact the false-positive rate. Therefore, as we did above, we generated many such samples and tested whether the presence of an outlier increases the chance of getting a significant correlation when the two underlying variables are not correlated (r=`r Rval`).
 
-### How sensisitive are correlations to one outlier?
+### How sensisitive are correlations to a single outlier?
 
 ``` {r SimulationOutlier, echo=FALSE}
 set.seed(123)# to make sure everybody gets the same results
@@ -945,8 +950,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
                fill = NA)+
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigOut),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.8, y = PsigOut/2, label = "False-Positive"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+    geom_label(aes(x = 0.86, y = PsigOut/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -966,13 +971,15 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   PP2and3Out <- ggarrange(PP2Out,PP3Out,ncol = 2, nrow = 1,labels = c("A","B"))
   fig_nums("PP2and3Out", paste("Distribution of p-values (panel A) and proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True r= ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-We will again repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is r=0. Therefore, we expect a uniform distribution of p-values (as in `r fig_nums("PP2",display="cite")`). In addition, only 5% of the simulated correlations should be significant (false-positive rate). Left panel of `r fig_nums("PP2and3Out",display="cite")` illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Out",display="cite")`)!
+As we did for highlighting the behavior of p-balues, we will repeatedly generate random numbers to obtain samples of the x and y variables. In addition, we replace the last point with an outlier as we did above. Importantly, given that these two variables are randomly generated, the expected correlation is r=0. Therefore, we expect a uniform distribution of p-values (as in `r fig_nums("PP2",display="cite")`). In addition, only 5% of the simulated correlations should be significant (false-positive rate). Left panel of `r fig_nums("PP2and3Out",display="cite")` illustrates that both of these expectations are falsified by the data. Therefore, a single outlier in a population of `r PopSize` points increase the type I error tremendously. That is, there are `r format(PsigOut*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Out",display="cite")`)!
 
 ``` {r PlotDistriP_outlier, echo=FALSE, fig.cap=fig_nums("PP2and3Out")}
 PP2and3Out
@@ -984,7 +991,7 @@ __*Assignment*__: *These analyses have been performed on the basis of r=0. The i
 
 ## Testing solutions
 
-Similarly to [@pernet2013], we will use simulations to test whether using other types of correlations than Pearson's correlation can mitigate the influence of outliers on the false-positive error rate. Such a solution will be considered to be good if, in the absence of correlation between the underlying variables, only 5% of simulated correlations are false-positive.Furthermore, the average correlation across simulations should be closed to the expected one.
+Similarly to [@pernet2013], we will use simulations to test whether using other types of correlations than Pearson's correlation can mitigate the influence of outliers on the false-positive error rate. Such a solution will be considered if, in the absence of correlation between the underlying variables, only 5% of simulated correlations are false-positive. Furthermore, the average correlation across simulations should be closed to the expected one.
 
 ### Solution: non-parametric correlation - Spearman
 ``` {r SimulationSpearOutlier, echo=FALSE}
@@ -1024,8 +1031,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
                fill = NA)+
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSpear),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.8, y = PsigSpear/2, label = "False-Positive"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+    geom_label(aes(x = 0.86, y = PsigSpear/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1044,6 +1051,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   fig_nums("PP3Spear",paste("Ability of Spearman correlation to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
@@ -1093,8 +1102,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
                fill = NA)+
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigRob),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.8, y = PsigRob/2, label = "False-Positive"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+    geom_label(aes(x = 0.86, y = (PsigRob/2), label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1113,11 +1122,14 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
     fig_nums("PP3Rob",paste("Ability of robust correlation (winsorized) to reduce the influence of an outlier on type I error. Proportion of significant and non-significant p-values for robust correlation when the simulated correlations are biased by an outlier ", SDdist," standard deviation away from the mean. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
+<!-- $$JJ JC suggests to explain what winsorized correlations are -->
 In contrast, the use of winsorized correlation ([@pernet2013]) solves the problem as robust correlation methods are designed to handle outliers. This is confirmed by `r fig_nums("PP3Rob",display="cite")`, which shows that the influence of the outlier is eliminated and that the type I error rate (= `r PsigRob`) is very close to the 5% level. In R, this correlation is available in the $WRS2$ package [@mair2018].
 
 ``` {r PlotRobOutlier, echo=FALSE, fig.cap=fig_nums("PP3Rob")}
@@ -1127,7 +1139,7 @@ PP3Rob
 
 ## The subgroup problem: simulation and solution
 
-Researchers often want to estimate correlation across different subgroups. For instance, in my own research, I wanted to correlate the amount of explicit motor learning with working memory capacity across both young and old participants [@vandevoorde2019]. Yet, working memory capacity is known to decline with aging and so is the explicit component of motor learning [@vandevoorde2019]. Yet, this does not mean that these two variables are correlated across participants. The goal of this section is to investigate the influence of subgroups on correlations because many researchers compute correlations on the pooled data. Yet correlations on heterogeneous subgroups are problematic [@hadzi-pavlovic2007; @hassler2003; @sockloff1975].
+Researchers often want to estimate correlation across different subgroups. For instance, in my own research, I want to correlate the amount of explicit motor learning with working memory capacity across both young and older participants [@vandevoorde2019]. Yet, working memory capacity is known to decline with aging and so is the explicit component of motor learning [@vandevoorde2019]. Yet, this does not mean that these two variables are correlated across participants. The goal of this section is to investigate the influence of subgroups on correlations because many researchers compute correlations on the pooled data. Yet correlations on heterogeneous subgroups are problematic [@hadzi-pavlovic2007; @hassler2003; @sockloff1975].
 
 ### How sensisitive are correlations to subgroups?
 
@@ -1247,8 +1259,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSub),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.8, y = PsigSub/2, label = "False-Positive"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+    geom_label(aes(x = 0.86, y = PsigSub/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1274,13 +1286,15 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   PP2and3Sub <- ggarrange(PP2Sub,PP3Sub,ncol = 2, nrow = 1,labels = c("A","B"))
   fig_nums("PP2and3Sub", paste("Influence of subgroup differences on the distribution of p-values (panel A) and on the proportion of significant and non-significant p-values (panel B) when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True r= ", Rval, "and sample size N= ", PopSize),display=FALSE)
     # fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
-In this graph, we observe a strong correlation r=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulation (`r format(Nsim, scientific=FALSE)` times) allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold.
+In this graph, we observe a strong correlation r=`r format(Rsub$r[1,2], digits = 2)` (CI: [`r format(Rressub$conf.int[1], digits = 2)`, `r format(Rressub$conf.int[2], digits = 2)`], p=`r format(Rsub$P[1,2], digits = 2)`). Repeating such simulation (`r format(Nsim, scientific=FALSE)` times) allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. Indeed, given that we simulate two variables that are not correlated, we should expect a uniform distributionof p-values (see `r fig_nums("PP2",display="cite")`)). If the two subgroups are `r SDdistSub` SD away, we observe `r format(PsigSub*100, digits=1)` % significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold.
 
 __*Assignment:*__
 *The interested reader can test the effect of the distance between the two groups (in SD) on the percentage of false-positive correlations. Sample size also influences this percentage*
@@ -1297,6 +1311,8 @@ __*Assignment:*__
 *The mean difference between the subgroups and their size also affect the magnitude of the false-positive correlations, which will tend to be larger because of the subgroups.* 
 
 ### Solution to the subgroup problem
+
+<!-- $$JJ add multilevel correlation solution -->
 
 We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take the subgroups into account in a regression model in order to bring the percentage of false-positive correlations back to 5% (which is expected given that the two underlying variables are uncorrelated, r=`r Rval`)
 
@@ -1332,8 +1348,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSubSpear),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.8, y = PsigSubSpear/2, label = "False-Positive"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+    geom_label(aes(x = 0.86, y = PsigSubSpear/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1359,6 +1375,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
       fig_nums("PP3SubSpear",paste("Inability of Spearman correlation to reduce the influence of subgroups on type I error. Proportion of significant and non-significant p-values for Spearman correlation when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
@@ -1405,8 +1423,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigReg),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.2, "inches")),colour="red")+
-    geom_label(aes(x = 0.8, y = PsigReg/2, label = "False-Positive"), 
+     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+    geom_label(aes(x = 0.86, y = PsigReg/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
                colour = "red", 
@@ -1432,6 +1450,8 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
     coord_cartesian(xlim = c(0, 1),ylim = c(0, 1))+
     labs(title="",y="\n \n \nProportion of simulations")+
     scale_y_continuous(expand = c(0,0)) +
+    theme(legend.justification=c(1,0), legend.position=c(1,0.8))+
+    theme(legend.background = element_blank())+
     theme(axis.title.x = element_blank(),axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
   
@@ -1466,11 +1486,11 @@ PP1Reg <- ggplot(resReg, aes(x=R, fill=Sig)) +
 fig_nums("PP1Reg", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-In order to correlate parameters across different subgroups, one has to take these subgroups into account. This can be done by means of regression. In a simple linear regression $y = a*x + b$, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized. To z-normalize a variable, one needs to substract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero. To take subgroups into account, one needs to modify the regression equation as follow:
+To correlate parameters across different subgroups, one has to take these subgroups into account. This can be done by means of regression. In a simple linear regression $y = a*x + b$, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized. To z-normalize a variable, one needs to substract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero. To take subgroups into account, one needs to modify the regression equation as follow:
 $$
 y = a*x + c*G
 $$ 
-where $G$ is equal to zero for one subgroup and to one for the other. This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. As shown on `r fig_nums("PP3Reg",display="cite")`, including a term in the regression coefficient is able to reduce the false-positive rate to the 5% level and should therefore be used when data from heterogeneous subgroups are pooled for correlations.
+where $G$ is equal to -1 for one subgroup and to 1 for the other (the sum of these coefficients needs to be zero). This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. As shown on `r fig_nums("PP3Reg",display="cite")`, including a term in the regression coefficient is able to reduce the false-positive rate to the 5% level and should therefore be used when data from heterogeneous subgroups are pooled for correlations.
 
 ``` {r PlotProportionReg_subgroups, echo=FALSE, fig.cap=fig_nums("PP3Reg")}
 PP3Reg
@@ -1491,7 +1511,7 @@ for (i in c(1:Nsim)){
   D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
   SubN = round(PopSize/2)
   D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdistSub,len=SubN*2), nrow = SubN)
-  Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+  Z <- c(rep(-1,SubN),rep(1,PopSize-SubN))
   Add <- data.frame(D1=D[,1],D2=D[,2],Z=Z)
   Rrr <- lm(D2 ~ D1+Z, Add)
   SumRrr <- summary(Rrr, correlation = TRUE)
@@ -1534,7 +1554,7 @@ PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) +
     labs(title="",x="correlation coefficient" , y="Count")
 fig_nums("PP1Reg50", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
-Taking subgroups into account does not prevent us from detecting correlations when they are present. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (r=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (r=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on `r fig_nums("PP1Reg50",display="cite")`). It is important to note that the transition from significant to non-significant correlations presented on `r fig_nums("PP1Reg50",display="cite")`) is again more blurred than the ones shown on both panels of `r fig_nums("PP15vs28",display="cite")`. 
+Taking subgroups into account does not prevent us from detecting true correlations. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (r=`r format(RallReg50,digits=2)`) is pretty close to the actual correlation value (r=`r Rval50`). This futher validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on `r fig_nums("PP1Reg50",display="cite")`). It is important to note that the transition from significant to non-significant correlations presented on `r fig_nums("PP1Reg50",display="cite")`) is again more blurred than the ones shown on both panels of `r fig_nums("PP15vs28",display="cite")`. 
 
 ``` {r PlotDistriR50_Reg_subgroups, echo=FALSE, fig.cap=fig_nums("PP1Reg50")}
 PP1Reg50
@@ -1547,17 +1567,17 @@ Simulations stimulate statistical thinking and yield important insights on stati
 
 2) Even in the presence of an effect, some p-values can be non-significant [@lakens2017a]. 
 
-3) In the presence of an effect, proportion of significant p-values provide information about power. In the absence of an effect, it represents the number of false positives.
+3) In the presence of an effect, the proportion of significant p-values provide information about power. In the absence of an effect, it represents the number of false positives.
 
 4) Publication bias is bad for effect size estimation [@nissen2016; @sutton2000]. Both significant and non-significant effects are critical to estimate the actual effect size.
 
-5) When power is low, the overestimation of effect size because of publication bias is large, the with of the CI of the indivdiual correlation coefficient is large, the uncertainty of around the correlation coefficient is large, the effect of irregularities in the data (outliers or subgroups) is also prominent [@button2013].
+5) When power is low, the overestimation of effect size is large. This overestimation is reinforced by publication bias. The with of the CI of the indivdiual correlation coefficient is large, which means that the uncertainty of around the actual correlation coefficient is big [@button2013]. Moreover, when power is low, the effect of irregularities in the data (outliers or subgroups) is more prominent.
 
 6) Increasing the sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient (width of CI decreases).
 
 7) Getting significant p-values is not difficult, one just needs to try enough different statistical tests [@bennett2011]. 
 
-8) Having a mix of significant and non-significant results is normal and should become the norm. Some scientists present resuls that are too good to be true. Anybody should be warry of scientists who only publish significant results with small samples [@schimmack2012].
+8) Having a mix of significant and non-significant results is normal and should become the norm. Some scientists present results that are too good to be true. Anybody should be warry of scientists who only publish significant results with small samples [@schimmack2012].
 
 9) Simulations can be useful to test potential solution to encountered problems. For instance, the simulations clearly demonstrated that winsorised but not Spearman correlations can handle outliers [@pernet2013; @rousselet2012a].
 
