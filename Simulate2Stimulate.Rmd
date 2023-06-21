@@ -30,9 +30,8 @@ fig_nums <- captioner()
 
 <!-- To do
 1. adjust the format thing to make sure that I did not reduce the number of digits shown when it was set to 0. Need to use format(round(XX, 2)) if I only want 2 digits
-2. use parallel loops such as in http://datacolada.org/102
-3. add multilevel correlations. https://easystats.github.io/blog/posts/correlation_multilevel/
-4. update citations, anything since 2019?
+2. use parallel loops such as in http://datacolada.org/102 -> tested but seems to give different results
+4. update citations, anything since 2019? (Makin, Corneille, etc.)
 -->
 
 # Introduction
@@ -197,11 +196,12 @@ Fcolor <- c("orange","lightblue")
 CountSig <- sum(res$Sig)
 Psig <- CountSig/length(res$Sig)
 res$Sig = factor(1-res$Sig)
+SumRes <- sum(res$SigBin)
 PP2 <- ggplot(res, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
-    geom_hline(yintercept=sum(res$SigBin), linetype="dashed", color = "black") +
-    geom_label(aes(x = 0, y = sum(res$SigBin), label = "H0"), 
+    geom_hline(yintercept=SumRes, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = SumRes, label = "H0"), 
                hjust = "left", 
                vjust = "bottom", 
                colour = "black", 
@@ -925,11 +925,12 @@ Fcolor <- c("orange","lightblue")
 CountSigOut <- sum(resOut$Sig)
 PsigOut <- CountSigOut/length(resOut$Sig)
 resOut$Sig = factor(1-resOut$Sig)
+SumResOut <- resOut$SigBin
 PP2Out <- ggplot(resOut, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
-    geom_hline(yintercept=sum(resOut$SigBin), linetype="dashed", color = "black") +
-    geom_label(aes(x = 0, y = sum(resOut$SigBin), label = "H0"), 
+    geom_hline(yintercept=SumResOut, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = SumResOut, label = "H0"), 
                hjust = "left", 
                vjust = "bottom", 
                colour = "black", 
@@ -1241,11 +1242,12 @@ CountSigSubNDBC <- sum(resSub$NoDifButCorrel)
 PsigNDBC <- CountSigSubNDBC/length(resSub$NoDifButCorrel)
 
 resSub$Sig = factor(1-resSub$Sig)
+SumResSub <- sum(resSub$SigBin)
 PP2Sub <- ggplot(resSub, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
-    geom_hline(yintercept=sum(resSub$SigBin), linetype="dashed", color = "black") +
-    geom_label(aes(x = 0, y = sum(resSub$SigBin), label = "H0"), 
+    geom_hline(yintercept=SumResSub, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = SumResSub, label = "H0"), 
                hjust = "left", 
                vjust = "bottom", 
                colour = "black", 
