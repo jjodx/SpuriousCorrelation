@@ -31,7 +31,7 @@ report <- function(ListOut){
   }
   
   dat$Sig = factor(1-dat$Sig)
-  
+  SumDat <- sum(dat$SigBin)
   
   Rall <- mean(dat$R)
   if (Rsig>Rval){Rpos <- c("left","right")}else{Rpos <- c("right","left")}
@@ -65,8 +65,8 @@ report <- function(ListOut){
   PP2 <- ggplot(dat, aes(x=p, fill=Sig)) + 
     geom_histogram(aes(x=p,fill=Sig),binwidth=BinSize,boundary = 0.05,color="black") +
     scale_fill_manual(values = Fcolor) +
-    geom_hline(yintercept=sum(dat$SigBin), linetype="dashed", color = "black") +
-    geom_label(aes(x = 0, y = sum(dat$SigBin), label = "H0"), 
+    geom_hline(yintercept=SumDat, linetype="dashed", color = "black") +
+    geom_label(aes(x = 0, y = SumDat, label = "H0"), 
                hjust = "left", 
                vjust = "bottom", 
                colour = "black", 
