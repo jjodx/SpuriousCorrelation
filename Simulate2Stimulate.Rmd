@@ -4,9 +4,9 @@ subtitle: simulating p-values and their robustness to irregularities in the data
 author: "Jean-Jacques Orban de Xivry"
 date: "May 28, 2019"
 output:
-  word_document:
-    fig_caption: yes
   html_document:
+    fig_caption: yes
+  word_document:
     fig_caption: yes
   pdf_document:
     fig_caption: yes
