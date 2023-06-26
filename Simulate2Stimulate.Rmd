@@ -4,14 +4,14 @@ subtitle: simulating p-values and their robustness to irregularities in the data
 author: "Jean-Jacques Orban de Xivry"
 date: "May 28, 2019"
 output:
-  pdf_document: 
-    fig_caption: yes
-    latex_engine: xelatex
-  word_document:
-    fig_caption: yes
   html_document:
     keep_md: true
     fig_caption: yes
+  word_document:
+    fig_caption: yes
+  pdf_document: 
+    fig_caption: yes
+    latex_engine: xelatex
 bibliography: StatLibrary.bib
 ---
 
