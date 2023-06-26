@@ -4,18 +4,21 @@ subtitle: simulating p-values and their robustness to irregularities in the data
 author: "Jean-Jacques Orban de Xivry"
 date: "May 28, 2019"
 output:
-  html_document:
+  pdf_document: 
     fig_caption: yes
+    latex_engine: xelatex
   word_document:
     fig_caption: yes
-  pdf_document:
+  html_document:
+    keep_md: true
     fig_caption: yes
 bibliography: StatLibrary.bib
 ---
 
 ```{r setup, include=FALSE}
 # options for producing the document
-knitr::opts_chunk$set(echo = TRUE, eval.after = "fig.cap")
+knitr::opts_chunk$set(echo = TRUE, eval.after = "fig.cap",warning = FALSE, message = FALSE)
+
 # different R packages that are used in this document and the function use from each of them
 library(Hmisc) # for rcorr
 library(MASS) # for mvnorm
@@ -301,7 +304,7 @@ PP1 <- ggplot(res, aes(x=R, fill=Sig)) +
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", size = 1) +
+    geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", linewidth = 1) +
     geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
@@ -309,7 +312,7 @@ PP1 <- ggplot(res, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", size = 1) +
+    geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", linewidth = 1) +
     geom_label(aes(x = Rall, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
@@ -353,7 +356,7 @@ PP175 <- ggplot(res75, aes(x=R, fill=Sig)) +
   geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
   scale_fill_manual(values = Fcolor) +
   coord_cartesian(xlim = c(-1, 1))+
-  geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", size = 1) +
+  geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", linewidth = 1) +
   geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
              hjust = Rpos[1], 
              vjust = "top", 
@@ -361,7 +364,7 @@ PP175 <- ggplot(res75, aes(x=R, fill=Sig)) +
              label.size = NA, 
              size = 3,
              fill = NA)+
-  geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", size = 1) +
+  geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", linewidth = 1) +
   geom_label(aes(x = Rall, y=Inf, label = "All"),
              hjust = Rpos[2], 
              vjust = "top", 
@@ -379,7 +382,9 @@ fig_nums("PP175", paste("distribution of the correlations coefficient when R=", 
 PP175
 ```
 
-I have insisted on the fact that the high false-positive correlations described above were linked to the small sample size used (N=`r PopSize`). Now, we will investigate the influence of sample size on the magnitude of these high false-positive correlations. To do so, we will repeat the simulations above but with a sample size of N=`r PopSize75` instead of N=`r PopSize`. As one can see on `r fig_nums("PP175", display = "cite")`, the value of the false-positive correlations has been dramatically reduced to absolute values larger than `r format(round(min(abs(res75$R[res75$Sig==0])),2), digits=2)`). In other words, if there is no effect, it is easy to obtain impressive but spurious correlations with low sample size while false-positive correlations are much less impressive with high sample size. Therefore, any scientist should be skeptical of exploratory correlations with low N. \> ***Assignment:*** *How big does the population size need to be to have all false positive correlations below a medium effect size (r=0.3)?*
+I have insisted on the fact that the high false-positive correlations described above were linked to the small sample size used (N=`r PopSize`). Now, we will investigate the influence of sample size on the magnitude of these high false-positive correlations. To do so, we will repeat the simulations above but with a sample size of N=`r PopSize75` instead of N=`r PopSize`. As one can see on `r fig_nums("PP175", display = "cite")`, the value of the false-positive correlations has been dramatically reduced to absolute values larger than `r format(round(min(abs(res75$R[res75$Sig==0])),2), digits=2)`). In other words, if there is no effect, it is easy to obtain impressive but spurious correlations with low sample size while false-positive correlations are much less impressive with high sample size. Therefore, any scientist should be skeptical of exploratory correlations with low N.
+
+> ***Assignment:*** *How big does the population size need to be to have all false positive correlations below a medium effect size (r=0.3)?*
 
 ### Understanding the multiple comparison problem.
 
@@ -392,7 +397,7 @@ SigIndex <- Index[Significant==TRUE]
 DifSig <- (SigIndex - c(1,SigIndex[1:length(SigIndex)-1]))+1
 ```
 
-These simulations also show that if we keep generating random parameters, we are assured of getting at least one significant correlation. With `r format(Nsim, scientific=FALSE)` simulations, there is almost 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(round(mean(DifSig,1),1))` trials. That is, if one keeps testing the significance of correlation between different parameters, (s)he is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon [@bennett2011].
+These simulations also show that if we keep generating random parameters, we are assured of getting at least one significant correlation. With `r format(Nsim, scientific=FALSE)` simulations, there is almost 100% chance that at least one correlation will be significant, even if there is no correlation between the x and y variables. In our simulation, we observed one significant correlation after `r format(round(mean(DifSig,1),1))` tests (on average). That is, if one keeps testing the significance of correlation between different parameters, (s)he is assured of finding a significant correlation even if none actually exists. This is often referred to as the multiple comparison problem and has been famously used by scientists to show brain activity in a dead salmon [@bennett2011].
 
 This illustrates that if someone keeps trying to test correlation between many possible variables, the probability of getting a significant correlation is 100% even if there should be no correlation.
 
@@ -507,7 +512,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig), y2=c(Psig,1), t=c('
                       labels=c("p<=0.05", "p>0.05")) +
     geom_segment(aes(x = 0.68, y = 1, xend = 0.68, yend = Psig),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"))+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"))+
     geom_label(aes(x = 0.86, y = Psig+((1-Psig)/2), label = "False-Negative"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -582,7 +587,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
                       labels=c("p<=0.05", "p>0.05")) +
     geom_segment(aes(x = 0.68, y = 1, xend = 0.68, yend = Psig28),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"))+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"))+
     geom_label(aes(x = 0.86, y = Psig28+((1-Psig28)/2), label = "False-Negative"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -609,7 +614,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,Psig28), y2=c(Psig28,1), t
   fig_nums("PP28", paste("proportion of significant and non-significant p-values when the simulated R is ", Rval50, "and the sample size is", PopSize28),display=FALSE)
 ```
 
-As indicated on `r fig_nums("PP28",display="cite")`, scientists often try to reach a power 80% (or 90%, or 95%) for an experiment (but they rarely do reach it [@button2013a]). Yet, this is here not the case. To detect a correlation r=`r Rval`, one needs `r PopSize28` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%. The power of an experiment depends on the size of the effect (here, the strength of the correlation) and on the number of samples.
+As indicated on `r fig_nums("PP28",display="cite")`, scientists often try to reach a power 80% (or 90%, or 95%) for an experiment (but they rarely do reach it [@button2013a]). Yet, this is here not the case. To detect a correlation r=`r Rval50`, one needs `r PopSize28` observations. In this case, the percentage of significant correlations reaches the power requirement of 80%. The power of an experiment depends on the size of the effect (here, the strength of the correlation) and on the number of samples.
 
 ```{r RectangleErrorTypeR50_N28, echo=FALSE, fig.cap=fig_nums("PP28")}
 PP28
@@ -629,7 +634,7 @@ PP150 <- ggplot(res, aes(x=R, fill=Sig)) +
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", size = 1) +
+    geom_vline(xintercept=Rsig, linetype="dashed", color = "darkorange", linewidth = 1) +
     geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
@@ -637,7 +642,7 @@ PP150 <- ggplot(res, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", size = 1) +
+    geom_vline(xintercept=Rall, linetype="dashed", color = "darkblue", linewidth = 1) +
     geom_label(aes(x = Rall, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
@@ -657,7 +662,7 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=Rsig28, linetype="dashed", color = "darkorange", size = 1) +
+    geom_vline(xintercept=Rsig28, linetype="dashed", color = "darkorange", linewidth = 1) +
     geom_label(aes(x = Rsig28, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
@@ -665,7 +670,7 @@ PP150_28 <- ggplot(res28, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=Rall28, linetype="dashed", color = "darkblue", size = 1) +
+    geom_vline(xintercept=Rall28, linetype="dashed", color = "darkblue", linewidth = 1) +
     geom_label(aes(x = Rall28, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
@@ -680,7 +685,7 @@ PP15vs28 <- ggarrange(PP150,PP150_28,ncol = 2, nrow = 1,labels = c("A","B"))
 fig_nums("PP15vs28", paste("distribution of significant and non-significant correlation coefficients when the simulated R is ", Rval50, "and the sample size is", PopSize, "(panel A) and ", PopSize28, "(panel B)"),display=FALSE)
 ```
 
-On `r fig_nums("PP15vs28",display="cite")`, we can see the distribution of correlation magnitude. Obviously, not all simulated correlations are exactly equal to `r Rval50` but are distributed around that value but are spread over a large interval. Indeed, the simulated correlations exhibited a large 95% confidence interval: between `r format(round(quantile(res$R,0.025),2),digits = 2)` and `r format(round(quantile(res$R,0.975),2),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the 95% confidence interval of simulated correlation `r format(round(quantile(res28$R,0.025),2),digits = 2)`,`r format(round(quantile(res28$R,0.975),2),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
+On `r fig_nums("PP15vs28",display="cite")`, we can see the distribution of correlation magnitude. Obviously, not all simulated correlations are exactly equal to `r Rval50` but are distributed around that value but are spread over a large interval. Indeed, the simulated correlations exhibited a large 95% confidence interval: between `r format(round(quantile(res$R,0.025),2),digits = 2)` and `r format(round(quantile(res$R,0.975),2),digits = 2)`. One can look at the effect of sample size on the precision of the estimated correlation. It is obvious that increasing the sample size (N= `r PopSize28`) decreases the 95% confidence interval of simulated correlation ([`r format(round(quantile(res28$R,0.025),2),digits = 2)`,`r format(round(quantile(res28$R,0.975),2),digits = 2)`]). This has been described previously and illustrates that high power (here 80%) does not always correspond to high precision given the remaining variability of the simulated correlations.
 
 ```{r PlotDistriR_R50_N28, echo=FALSE, fig.cap=fig_nums("PP15vs28")}
 PP15vs28
@@ -755,7 +760,7 @@ PPCI_50 <- ggplot(res, aes(x=CI, fill=Sig)) +
     scale_fill_manual(values = Fcolor) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
-    geom_vline(xintercept=median(res$CI), linetype="dashed", color = "black", size = 1) +
+    geom_vline(xintercept=median(res$CI), linetype="dashed", color = "black", linewidth = 1) +
     coord_cartesian(xlim = c(0, 1.2))+
     labs(title="",x="CI spread" , y="Count")
 
@@ -764,7 +769,7 @@ PPCI_28 <- ggplot(res28, aes(x=CI, fill=Sig)) +
     scale_fill_manual(values = Fcolor) +
     theme(legend.position='none')+
     scale_y_continuous(expand = c(0.1,0)) +
-    geom_vline(xintercept=median(res28$CI), linetype="dashed", color = "black", size = 1) +
+    geom_vline(xintercept=median(res28$CI), linetype="dashed", color = "black", linewidth = 1) +
     coord_cartesian(xlim = c(0, 1.2))+
     labs(title="",x="CI spread" , y="Count")
      
@@ -845,7 +850,7 @@ Nall28 = 100*Yall28/Nsim
 
 <!-- JC: The comparison of simulating 5 mini experiments (e.g., n = 15) vs 1 big experiment (n = 75) would be interesting. -->
 
-This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth [@francis2013a]. Either they have plenty of studies in their file-drawer or they are use questionable research practices to always obtain significant p-values. It is difficult to believe claims made from a series of only significant studies with small sample sizes (even across papers from the same laboratory). This cannot reflect the reality [@lane2016].
+This result is really important because it means that scientists who are only presenting series of papers with only significant studies (often with small sample size, hence low power) are not telling you the entire truth [@francis2013a]. Either they have plenty of studies in their file-drawer or they used questionable research practices to always obtain significant p-values. It is difficult to believe claims made from a series of only significant studies with small sample sizes (even across papers from the same laboratory). This cannot reflect the reality [@lane2016].
 
 Note that the percentage of series of `r Ngood` simulations that are all significant increases with power and sample size (N=`r PopSize`: `r Nall`%; N=`r PopSize28`: `r Nall28`%). Yet, even with 80% power, these remain the minority (`r 100-Nall28`% of the series of `r Ngood` simulations contain at least one non-significant p-value).
 
@@ -881,7 +886,7 @@ If we follow the same line of reasoning, one can investigate the distribution of
 
 <!-- If there is an effect, the probability of getting another significant result equals the statistical power of the test (independent replication): 50%. In the absence of an effect, the probability of getting another significant result would still be only 5%. -->
 
-> ***Assignment**: You read two papers, each reporting the results of three experiments. Which paper seems more plausible? A: p=0.024, p=0.034 and p=0.031 B: p=0.25, p=0.032 and p=0.0001 source: <https://twitter.com/EJWagenmakers/status/889987997046910978>*
+> ***Assignment**: You read two papers, each reporting the results of three experiments. Which paper seems more plausible? A: p=0.024, p=0.034 and p=0.031 B: p=0.25, p=0.032 and p=0.0001 ([source](https://twitter.com/EJWagenmakers/status/889987997046910978))*
 
 <!-- I would trust the paper B because it is very unlikely to have three p-values just under 0.05 (paper A) while having one non-significant p-value in three experiments is likely even if the power is 80% -->
 
@@ -992,7 +997,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigOut), y2=c(PsigOut,1),
                fill = NA)+
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigOut),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
     geom_label(aes(x = 0.86, y = (PsigOut-0.01)/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -1075,7 +1080,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSpear), y2=c(PsigSpear
                fill = NA)+
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSpear),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
     geom_label(aes(x = 0.86, y = (PsigSpear-0.01)/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -1146,7 +1151,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigRob), y2=c(PsigRob,1),
                fill = NA)+
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigRob),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
     geom_label(aes(x = 0.86, y = (PsigRob-0.01)/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -1217,7 +1222,7 @@ SubG4 <- ggplot(Scatter1) +
   fig_nums("SubG4",paste("Example of correlation biased by differences between subgroups", SDdistSub," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-To generate subgroups, we first generate the x and y parameters for the `r PopSize` individuals from two uncorrelated variables (r=`Rval`). We will then split the population into two subgroups and add a value of `r SDdistSub` to the values of both parameters for one of the two subgroups. This produces a scatterplot such as the one presented on `r fig_nums("SubG4",display="cite")`.
+To generate subgroups, we first generate the x and y parameters for the `r PopSize` individuals from two uncorrelated variables (r=`r Rval`). We will then split the population into two subgroups and add a value of `r SDdistSub` to the values of both parameters for one of the two subgroups. This produces a scatterplot such as the one presented on `r fig_nums("SubG4",display="cite")`.
 
 ```{r PlotExampleSubgroup, echo=FALSE, fig.cap=fig_nums("SubG4")}
 SubG4
@@ -1309,7 +1314,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSub),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
     geom_label(aes(x = 0.86, y = (PsigSub-0.01)/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -1345,7 +1350,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSub), y2=c(PsigSub,1),
     # fig_nums("PP3Sub",paste("Influence of subgroup differences on type I error. Proportion of significant and non-significant p-values when the simulated correlations are biased by subgroups ", SDdistSub," standard deviation away from each other. True r= ", Rval, "and the sample size is", PopSize),display = FALSE)
 ```
 
-In this graph, we observe a strong correlation r=`r format(round(Rsub$r[1,2],2), digits = 2)` (CI: [`r format(round(Rressub$conf.int[1],2), digits = 2)`, `r format(round(Rressub$conf.int[2],2), digits = 2)`], p=`r format(round(Rsub$P[1,2],2), digits = 2)`). Repeating such simulation (`r format(Nsim, scientific=FALSE)` times) allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. Indeed, given that we simulate two variables that are not correlated, we should expect a uniform distribution of p-values (see `r fig_nums("PP2",display="cite")`)). If the two subgroups are `r SDdistSub` SD away, we observe `r format(round(PsigSub*100,1), digits=1)` % of significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold.
+In this graph, we observe a strong correlation r=`r format(round(Rsub$r[1,2],2), digits = 2)` (CI: [`r format(round(Rressub$conf.int[1],2), digits = 2)`, `r format(round(Rressub$conf.int[2],2), digits = 2)`], p=`r format(round(Rsub$P[1,2],3), digits = 3)`). Repeating such simulation (`r format(Nsim, scientific=FALSE)` times) allows us to understand the effect of subgroups on the number of false-positive correlations. Left panel of `r fig_nums("PP2and3Sub",display="cite")` illustrates that the presence of differences between the subgroups have a massive effect on the distribution of p-values for the simulated correlations. Indeed, given that we simulate two variables that are not correlated, we should expect a uniform distribution of p-values (see `r fig_nums("PP2",display="cite")`)). If the two subgroups are `r SDdistSub` SD away, we observe `r format(round(PsigSub*100,1), digits=1)` % of significant p-values (right panel of `r fig_nums("PP2and3Sub",display="cite")`), which is far above the expected 5% threshold.
 
 ***Assignment:*** *The interested reader can test the effect of the distance between the two groups (in SD) on the percentage of false-positive correlations. Sample size also influences this percentage*
 
@@ -1355,7 +1360,7 @@ PP2and3Sub
 
 Note that for `r format(round(PsigNDBC*100,2), digits=2)`% of these significant correlations, the between-groups difference for the x and y parameters was not significant. Yet, these subgroups yielded a positive correlation. This means that the absence of significant difference across subgroups for the two parameters is not sufficient to justify the fact that the data was pooled across groups. The subgroups must be taken into account when computing the correlation.
 
-In addition, the bigger the groups are, the smaller the difference between the subgroups must be to give rise to a significant correlation. For instance, for a sample of `r PopSize` participants, a difference of `r SDdistSub75` SD between groups merely inflates the number of false-positive correlations (`r format(round(PsigSub75_15*100,1), digits=1)`% of correlations are significant). However, this difference becomes important for larger populations. For instance, a difference of `r SDdistSub75` SD between subgroups increase the type I error rate to `r format(round(PsigSub75*100,1), digits=1)`% and this percentage increases further with sample size.
+In addition, the bigger the groups are, the smaller the difference between the subgroups must be to give rise to a significant correlation. For instance, for a sample of `r PopSize` participants, a difference of `r SDdistSub75` SD between groups merely inflates the number of false-positive correlations (`r format(round(PsigSub75_15*100,1), digits=1)`% of correlations are significant). However, this difference becomes important for larger populations. For instance, when the total sample is N = `r PopSize75`, a difference of `r SDdistSub75` SD between subgroups increase the type I error rate to `r format(round(PsigSub75*100,2), digits=2)`% and this percentage increases further with sample size.
 
 > ***Assignment**: How does the mean difference between the subgroups and their size affect the magnitude of the percentage of false-positive correlations.*
 
@@ -1363,7 +1368,7 @@ In addition, the bigger the groups are, the smaller the difference between the s
 
 ### Solutions to the subgroup problem
 
-We will first show that Spearman correlation is again unable to solve the problem of subgroups eventhough it slightly reduces the problem. Then we will show that one needs to take the subgroups into account in a regression model or via multilevel correlations in order to bring the percentage of false-positive correlations back to 5% (which is expected given that the two underlying variables are uncorrelated, r=`r Rval`). Interestingly, robust regression could also be used in order to deal with both subgroups and outliers. However, the regression solution becomes tricky when there are more than two groups. An alternative solution, which works easily for many groups, is the use of multilevel correlation [@correlation].
+We will first show that Spearman correlation is again unable to solve the problem of subgroups even though it slightly reduces the problem. Then we will show that one needs to take the subgroups into account in a regression model or via multilevel correlations in order to bring the percentage of false-positive correlations back to 5% (which is expected given that the two underlying variables are uncorrelated, r=`r Rval`). Interestingly, robust regression could also be used in order to deal with both subgroups and outliers. However, the regression solution becomes tricky when there are more than two groups. An alternative solution, which works easily for many groups, is the use of multilevel correlation [@correlation].
 
 #### Spearman is not a solution
 
@@ -1398,7 +1403,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigSubSpear), y2=c(PsigSu
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigSubSpear),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
     geom_label(aes(x = 0.86, y = (PsigSubSpear-0.01)/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -1472,7 +1477,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigReg), y2=c(PsigReg,1),
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigReg),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
     geom_label(aes(x = 0.86, y = (PsigReg-0.01)/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -1513,7 +1518,7 @@ PP1Reg <- ggplot(resReg, aes(x=R, fill=Sig)) +
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=RsigReg, linetype="dashed", color = "darkorange", size = 1) +
+    geom_vline(xintercept=RsigReg, linetype="dashed", color = "darkorange", linewidth = 1) +
     geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
@@ -1521,7 +1526,7 @@ PP1Reg <- ggplot(resReg, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=RallReg, linetype="dashed", color = "darkblue", size = 1) +
+    geom_vline(xintercept=RallReg, linetype="dashed", color = "darkblue", linewidth = 1) +
     geom_label(aes(x = RallReg, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
@@ -1535,9 +1540,9 @@ PP1Reg <- ggplot(resReg, aes(x=R, fill=Sig)) +
 fig_nums("PP1Reg", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval, "and the sample size is", PopSize),display=FALSE)
 ```
 
-To correlate parameters across different subgroups, one has to take these subgroups into account. This can be done by means of regression. In a simple linear regression $y = a*x + b$, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized (mean=0 and standard deviation of 1). To z-normalize a variable, one needs to subtract its mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero (in $y = a*x + b$). To take subgroups into account, one needs to modify the regression equation as follow: $$
+To correlate parameters across different subgroups, one has to take these subgroups into account. This can be done by means of regression. In a simple linear regression $y = a*x + b$, the coefficient $a$ corresponds to the correlation coefficient between x and y if these variables are z-normalized (mean=0 and standard deviation of 1). To z-normalize a variable, one needs to subtract the sample mean from every observation and divide the outcome by the standard deviation of the sample ($z_i = (x_i - mean(x))/SD(x)$). Note that when the data are normalized, $b$ is always zero (in $y = a*x + b$). To take subgroups into account, one needs to modify the regression equation as follow: $$
 y = a*x + c*G
-$$ where $G$ is equal to -1 for one subgroup and to 1 for the other (the sum of these coefficients needs to be zero). This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. As shown on `r fig_nums("PP3Reg",display="cite")`, including a term in the regression coefficient is able to reduce the false-positive rate to the 5% level and could therefore be used when data from heterogeneous subgroups are pooled for correlations.
+$$ where $G$ is equal to -1 for one subgroup and to 1 for the other (the sum of these coefficients needs to be zero). This equation makes the hypothesis that we expect the same correlation for both groups given that there are no interaction term between $x$ and $G$. As shown on `r fig_nums("PP3Reg",display="cite")`, including an additional independent variable ($G$) in the regression is able to reduce the false-positive rate to the 5% level and could therefore be used when data from heterogeneous subgroups are pooled for correlations.
 
 ```{r PlotProportionReg_subgroups, echo=FALSE, fig.cap=fig_nums("PP3Reg")}
 PP3Reg
@@ -1579,7 +1584,7 @@ PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) +
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=RsigReg50, linetype="dashed", color = "darkorange", size = 1) +
+    geom_vline(xintercept=RsigReg50, linetype="dashed", color = "darkorange", linewidth = 1) +
     geom_label(aes(x = RsigReg50, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
@@ -1587,7 +1592,7 @@ PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=RallReg50, linetype="dashed", color = "darkblue", size = 1) +
+    geom_vline(xintercept=RallReg50, linetype="dashed", color = "darkblue", linewidth = 1) +
     geom_label(aes(x = RallReg50, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
@@ -1601,7 +1606,7 @@ PP1Reg50 <- ggplot(resReg50, aes(x=R, fill=Sig)) +
 fig_nums("PP1Reg50", paste("distribution of significant and non-significant standardized regression coefficients when the simulated correlations are biased by subgroups ", SDdist," standard deviation away from each other. True R is ", Rval50, "and the sample size is", PopSize),display=FALSE)
 ```
 
-Taking subgroups into account does not prevent us from detecting true correlations. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (r=`r format(round(RallReg50,2),digits=2)`) is pretty close to the actual correlation value (r=`r Rval50`). This further validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on `r fig_nums("PP1Reg50",display="cite")`). It is important to note that the transition from significant to non-significant correlations presented on `r fig_nums("PP1Reg50",display="cite")`) is again more blurred than the ones shown on both panels of `r fig_nums("PP15vs28",display="cite")`.
+Taking subgroups into account does not prevent us from detecting true correlations. Indeed, one can apply the same logic when a correlation of `r Rval50` is used for the simulations. In this case, we see that the average correlation over all simulations (r=`r format(round(RallReg50,2),digits=2)`) is pretty close to the actual correlation value (r=`r Rval50`). This further validates the use of this method to compute correlation in the presence of subgroups. Off course, it remains also true that considering only the significant correlations remains problematic and leads to an overestimation of the actual correlation value (orange dashed line on `r fig_nums("PP1Reg50",display="cite")`). It is important to note that the transition from significant to non-significant correlations presented on `r fig_nums("PP1Reg50",display="cite")` is again more blurred than the ones shown on both panels of `r fig_nums("PP15vs28",display="cite")`.
 
 ```{r PlotDistriR50_Reg_subgroups, echo=FALSE, fig.cap=fig_nums("PP1Reg50")}
 PP1Reg50
@@ -1609,7 +1614,7 @@ PP1Reg50
 
 #### Multilevel correlations can take many subgroups into account and are controlling the false-positive rate.
 
-Multilevel correlations (also referred to as hierarchical or random-effects correlation) are a type of linear models that can compute a correlation for pooled data across groups while taking the different subgroups into account [@makowski2020]. This is important as illustrated by the Simpson paradox (see [link](https://easystats.github.io/blog/posts/correlation_multilevel/) for details, [@blyth1972]). As we have done for the regression, we will simulate two independent variables for two different subgroups and we will then apply the multilevel correlation to the obtained correlation values and the associated p-values. We expect that 5% of the p-values will be under the p=0.05 threshold as no underlying correlation is used.
+Multilevel correlations (also referred to as hierarchical or random-effects correlation) are a type of linear models that can compute a correlation for pooled data across groups while taking the different subgroups into account [@makowski2020]. This is important as illustrated by the Simpson paradox (see [link](https://easystats.github.io/blog/posts/correlation_multilevel/) for details, [@blyth1972]). As we have done for the regression, we will simulate two independent variables for two different subgroups and we will then apply the multilevel correlation to obtain the correlation magnitude and the associated p-value. We expect that 5% of the p-values will be under the p=0.05 threshold as no underlying correlation is used.
 
 ```{r SimulationMultilevelR0, echo=FALSE}
 set.seed(15)# to make sure everybody gets the same results
@@ -1644,7 +1649,7 @@ d=data.frame(x1=c(0.33,0.33), x2=c(0.66,0.66), y1=c(0,PsigMuCo), y2=c(PsigMuCo,1
     geom_hline(yintercept=0.05, linetype="dashed", color = "red") +
     geom_segment(aes(x = 0.68, y = 0, xend = 0.68, yend = PsigMuCo),
      lineend = 'butt', linejoin = 'bevel',
-     size = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
+     linewidth = 0.5, arrow = arrow(length = unit(0.1, "inches"), type = "closed"),colour="red")+
     geom_label(aes(x = 0.86, y = (PsigMuCo-0.01)/2, label = "False-Positive"), 
                hjust = "center", 
                vjust = "bottom", 
@@ -1685,7 +1690,7 @@ PP1MuCo <- ggplot(resMuCo, aes(x=R, fill=Sig)) +
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=RsigMuCo, linetype="dashed", color = "darkorange", size = 1) +
+    geom_vline(xintercept=RsigMuCo, linetype="dashed", color = "darkorange", linewidth = 1) +
     geom_label(aes(x = Rsig, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
@@ -1693,7 +1698,7 @@ PP1MuCo <- ggplot(resMuCo, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=RallMuCo, linetype="dashed", color = "darkblue", size = 1) +
+    geom_vline(xintercept=RallMuCo, linetype="dashed", color = "darkblue", linewidth = 1) +
     geom_label(aes(x = RallMuCo, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
@@ -1748,7 +1753,7 @@ PP1MuCo50 <- ggplot(resMuCo50, aes(x=R, fill=Sig)) +
     geom_histogram(aes(x=R,fill=Sig),binwidth=.05,boundary = 0,color="black") +
     scale_fill_manual(values = Fcolor) +
     coord_cartesian(xlim = c(-1, 1))+
-    geom_vline(xintercept=RsigMuCo50, linetype="dashed", color = "darkorange", size = 1) +
+    geom_vline(xintercept=RsigMuCo50, linetype="dashed", color = "darkorange", linewidth = 1) +
     geom_label(aes(x = RsigMuCo50, y = Inf, label = "Sig."), 
                hjust = Rpos[1], 
                vjust = "top", 
@@ -1756,7 +1761,7 @@ PP1MuCo50 <- ggplot(resMuCo50, aes(x=R, fill=Sig)) +
                label.size = NA, 
                size = 3,
                fill = NA)+
-    geom_vline(xintercept=RallMuCo50, linetype="dashed", color = "darkblue", size = 1) +
+    geom_vline(xintercept=RallMuCo50, linetype="dashed", color = "darkblue", linewidth = 1) +
     geom_label(aes(x = RallMuCo50, y=Inf, label = "All"),
                hjust = Rpos[2], 
                vjust = "top", 
@@ -1774,11 +1779,11 @@ fig_nums("PP1MuCo50", paste("distribution of significant and non-significant mul
 PP1MuCo50
 ```
 
-# What have we learned?
+# What did we learn?
 
 Simulations stimulate statistical thinking and yield important insights on statistics. It also allows one to explore potential solutions to a data analysis problem (e.g. presence of subgroups).
 
-1)  The distribution of p-value under no correlation is flat. The probability of observing p\<0.05 is identical to the probability of observing p\>0.95 [@benjamini1995controlling].
+1)  The distribution of p-value in the absence of an effect is flat. The probability of observing p\<0.05 is identical to the probability of observing p\>0.95 [@benjamini1995controlling].
 
 2)  Even in the presence of an effect, some p-values can be non-significant [@lakens2017a].
 
@@ -1788,7 +1793,7 @@ Simulations stimulate statistical thinking and yield important insights on stati
 
 5)  When power is low, the overestimation of effect size is large. This overestimation is reinforced by publication bias.
 
-6)  The with of the confidence interval of the individual correlation coefficient is large, which means that the uncertainty of around the actual correlation coefficient is big [@button2013]. Moreover, when power is low, the effect of irregularities in the data (outliers or subgroups) is more prominent.
+6)  When power i slow, the width of the confidence interval of the individual correlation coefficient is large, which means that the uncertainty of around the actual correlation coefficient is big [@button2013]. Moreover, the effect of irregularities in the data (outliers or subgroups) is more prominent in situations where power is low.
 
 7)  Increasing the sample size has three major effects: 1) it increases power, 2) it improves accuracy of the effect size estimation at the population level and 3) it increases the accuracy of every individual correlation coefficient (width of confidence interval decreases).
 
