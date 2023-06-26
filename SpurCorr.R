@@ -150,7 +150,9 @@ SimulateCorr <- function(PopSize=15,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
   )
   dSolution <- switch(Solution,
                       "no" = 0,
-                      "yes" = 1
+                      "outlier: robust correlation" = 1,
+                      "subgroups: regression" = 2,
+                      "subgroups: multilevel correlation" =3
   )
   POP <- switch(Problem, 
                 "none" = c("Main"),
@@ -168,16 +170,25 @@ SimulateCorr <- function(PopSize=15,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
   for (i in c(1:Nsim)){
     if (dProblem <3){
       D <- mvrnorm(n = PopSize, rep(0, 2), Sigma, empirical = FALSE)
+      if (dProblem == 0) {
+        Z <- c(rep(0,PopSize))
+        D1 <- D[,1]
+        D2 <- D[,2]
+        Add <- data.frame(D1,D2,Z)
+      }
       if (dProblem == 1) {
         mMeans=apply(D,2,mean)
         mStd=apply(D,2,sd)
         D[PopSize,]<-mMeans+SDdist*mStd #rep(SDdist,2)
-        Z <- c(rep(0,PopSize-1),1)
+        Z <- c(rep(-1,PopSize-1),1)
+        D1 <- D[,1]
+        D2 <- D[,2]
+        Add <- data.frame(D1,D2,Z)
       }
       if (dProblem == 2) {
         SubN = round(PopSize/2)
         D[1:SubN,]<-D[1:SubN,]+matrix(rep(SDdist,len=SubN*2), nrow = SubN)
-        Z <- c(rep(0,SubN),rep(1,PopSize-SubN))
+        Z <- c(rep(-1,SubN),rep(1,PopSize-SubN))
         D1 <- D[,1]
         D2 <- D[,2]
         Add <- data.frame(D1,D2,Z)
@@ -188,35 +199,53 @@ SimulateCorr <- function(PopSize=15,Nsim=1000,Rval=0,Problem="none",SDdist=3,Ske
       Y <- rsnorm(PopSize, mean = 0, sd = 1, xi = 1)
       D = cbind(X,Y)
     }
-    if (i==1){
+    if (i==1){ # plotting the scatterplot for the first simulation
       D1 <- D[,1]
       D2 <- D[,2]
       Zf = factor(Z)
       Scatter1 <- data.frame(D1,D2,Zf)
     }
-    if (dSolution==0){
+    if (dSolution==0){ # Pearson Correlation
       R<-rcorr(D[,1],D[,2])
       res[i,"R"] <- R$r[1,2]
       res[i,"p"]<-R$P[1,2]
       res[i,"Sig"]<-res[i,"p"]<0.05
       res[i,"SigBin"]<-res[i,"p"]<BinSize
     } 
-    else {
-      if (dProblem <= 1){ # outlier
+    else if (dSolution== 1){ # winsorized correlation
         R<-wincor(D[,1],D[,2],0.2)
         res[i,"R"] <- R$cor
         res[i,"p"]<-R$p.value
         res[i,"Sig"]<-res[i,"p"]<0.05
         res[i,"SigBin"]<-res[i,"p"]<BinSize
       }
-      else { # two subpopulations
+    else if (dSolution ==2) { # regression
         Rrr <- lm(D2 ~ D1+Z, Add)
         SumRrr <- summary(Rrr, correlation = TRUE)
         res[i,"R"] <-SumRrr$coefficients[2,1] #Normalized coefficient
         res[i,"p"] <- SumRrr$coefficients[2,4] #p-value
         res[i,"Sig"]<-res[i,"p"]<0.05
         res[i,"SigBin"]<-res[i,"p"]<BinSize
+    }
+    else if (dSolution ==3){ # computing multilevel correlation
+      Add$Z = factor(Add$Z)
+      if (length(unique(Add$Z))>1){
+        Rmulti <- correlation(Add, multilevel = TRUE)
+        res[i,"R"] <-Rmulti$r #Normalized coefficient
+        res[i,"p"] <- Rmulti$p #p-value
+        res[i,"Sig"]<-res[i,"p"]<0.05
+        res[i,"SigBin"]<-res[i,"p"]<BinSize
       }
+      else { # if only one factor, multilevel correlation = pearson
+        R<-rcorr(D[,1],D[,2])
+        res[i,"R"] <- R$r[1,2]
+        res[i,"p"]<-R$P[1,2]
+        res[i,"Sig"]<-res[i,"p"]<0.05
+        res[i,"SigBin"]<-res[i,"p"]<BinSize
+        dSolution <- 0
+        Solution <- "no"
+      }
+      
     }
   }
   Txt <- writeTXT(PopSize=PopSize,Nsim=Nsim,Rval=Rval,Problem=Problem,SDdist=SDdist,Skewness=Skewness,Solution=Solution,BinSize=BinSize)
@@ -236,15 +265,26 @@ writeTXT <- function(PopSize=15,Nsim=1000,Rval=0,Problem="none",SDdist=3,Skewnes
                      "skewed" = 3)
   dSolution <- switch(Solution,
                       "no" = 0,
-                      "yes" = 1)
-  if (dSolution==1){
-    if (dProblem<=1){
-      TxtSol <- ".\nType: winsorized correlation"}
-    else{
-      TxtSol <- ".\nType: regression with subpopulation as factor"}
-  }
-  else{
-    TxtSol <- ".\nType: Pearson correlation"}
+                      "outlier: robust correlation" = 1,
+                      "subgroups: regression" = 2,
+                      "subgroups: multilevel correlation" =3)
+  TxtSol <- switch(dSolution+1, 
+                   {
+                     # dSolution == 0
+                     ".\nType: Pearson correlation"
+                   },
+                   {
+                     # dSolution == 1
+                     ".\nType: winsorized correlation"   
+                   },
+                   {
+                     # dSolution == 2
+                     ".\nType: regression with subpopulation as factor"   
+                   },
+                   { # dSolution == 3
+                     ".\nType: multilevel correlation"
+                   }
+  )
   
   TitleTxt <- paste0("Simulations of correlation (R= ",Rval,
                      ")", Prob,TxtSol)

@@ -5,6 +5,7 @@ library(ggplot2) # for plotting
 library(ggpubr) # for ggarrange
 library(fGarch) # for skewed distribution
 library(WRS2) # for wincor and pbcor
+library(correlation) # for multilevel correlations
 source("SpurCorr.R")
 
 # User interface ----
@@ -16,13 +17,13 @@ ui <- fluidPage(
       helpText("Create your own (spurious) correlation(s)"),
       
       selectInput("var", 
-                  label = "Choose a variable to display",
+                  label = "Choose a data type to display",
                   choices = c("Correlation", "Correlation with outlier",
                               "Correlation with subgroups"),
                   selected = "Correlation"),
       selectInput("Solution", 
-                  label = "Use robust correlations?",
-                  choices = c("yes", "no"),
+                  label = "Account for data irregularity",
+                  choices = c("no", "outlier: robust correlation","subgroups: regression","subgroups: multilevel correlation"),
                   selected = "no"),
       numericInput("Nsim", 
                   label = "Number of simulations",
