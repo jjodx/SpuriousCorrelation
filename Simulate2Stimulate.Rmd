@@ -415,8 +415,7 @@ To simulate two parameters with a given correlation, one can use the $mvnorm$ fu
 Sigma = \begin{pmatrix}
 1 & `r Rval50`\\
 `r Rval50` & 1
-\end{pmatrix}
-$$
+\end{pmatrix}$$
 
 ```{r CorrelR50, echo=FALSE}
 set.seed(12)# to make sure everybody gets the same results
